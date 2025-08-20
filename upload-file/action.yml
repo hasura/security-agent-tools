@@ -1,0 +1,19 @@
+name: "Upload File Action"
+description: "A GitHub Action to upload files"
+author: "Hasura"
+
+branding:
+  icon: "upload"
+  color: "blue"
+
+inputs:
+  file_path:
+    description: "Path to the file to upload"
+    required: true
+  destination:
+    description: "Destination path or URL for the upload"
+    required: true
+
+runs:
+  using: "docker"
+  image: "Dockerfile"
