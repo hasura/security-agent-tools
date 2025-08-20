@@ -13,6 +13,12 @@ inputs:
   destination:
     description: "Destination path or URL for the upload"
     required: true
+  security_agent_api_endpoint:
+    description: "Security Agent API endpoint"
+    required: true
+  security_agent_api_key:
+    description: "Security Agent API key"
+    required: true
 
 runs:
   using: "docker"
