@@ -23,3 +23,8 @@ inputs:
 runs:
   using: "docker"
   image: "Dockerfile"
+  args:
+    - ${{ inputs.file_path }}
+    - ${{ inputs.destination }}
+    - ${{ inputs.security_agent_api_endpoint }}
+    - ${{ inputs.security_agent_api_key }}
