@@ -14,7 +14,7 @@ RUN go mod download
 COPY . .
 
 # Build the application
-RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o upload-file .
+RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o upload-file-cmd .
 
 # Runtime stage
 FROM alpine:latest
@@ -26,17 +26,18 @@ RUN apk --no-cache add ca-certificates
 RUN addgroup -g 1001 -S appgroup && \
     adduser -u 1001 -S appuser -G appgroup
 
-# Set working directory
-WORKDIR /root/
+# Set working directory to a location accessible by appuser
+WORKDIR /home/appuser
 
 # Copy the binary from builder stage
-COPY --from=builder /app/upload-file .
+COPY --from=builder /app/upload-file-cmd .
 
 # Change ownership to non-root user
-RUN chown appuser:appgroup upload-file
+RUN chown appuser:appgroup upload-file-cmd && \
+    chmod +x upload-file-cmd
 
 # Switch to non-root user
 USER appuser
 
 # Command to run the executable
-CMD ["./upload-file"]
+CMD ["/home/appuser/upload-file-cmd"]

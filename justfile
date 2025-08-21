@@ -91,8 +91,9 @@ test-upload-file-docker:
         -v "$(pwd)/test-file.json:/test-file.json:ro" \
         -e INPUT_FILE_PATH="/test-file.json" \
         -e INPUT_DESTINATION="${INPUT_DESTINATION:-temp-data/test-$(date +%s).json}" \
-        -e INPUT_SECURITY_AGENT_API_ENDPOINT="${INPUT_SECURITY_AGENT_API_ENDPOINT:-}" \
-        -e INPUT_SECURITY_AGENT_API_KEY="${INPUT_SECURITY_AGENT_API_KEY:-}" \
+        -e INPUT_SECURITY_AGENT_API_ENDPOINT="${INPUT_SECURITY_AGENT_API_ENDPOINT}" \
+        -e INPUT_SECURITY_AGENT_API_KEY="${INPUT_SECURITY_AGENT_API_KEY}" \
+        --network host \
         upload-file-test
 
     echo "--- :: Cleaning up test file"
