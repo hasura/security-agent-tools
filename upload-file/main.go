@@ -97,7 +97,7 @@ func getPresignedUploadURL(destination, securityAgentAPIEndpoint, securityAgentA
 		}
 	`)
 	req.Var("name", destination)
-	req.Header.Set("Authorization", "Bearer "+securityAgentAPIKey)
+	req.Header.Set("Authorization", securityAgentAPIKey)
 
 	// Set context with timeout
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
