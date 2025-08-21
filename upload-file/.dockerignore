@@ -1,0 +1,22 @@
+# Ignore compiled binaries
+upload-file
+*.exe
+
+# Ignore common development files
+.git
+.gitignore
+*.log
+*.tmp
+.DS_Store
+Thumbs.db
+
+# Ignore IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Ignore test files
+*_test.go
+
+.env
