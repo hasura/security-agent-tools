@@ -40,4 +40,4 @@ RUN chown appuser:appgroup upload-file-cmd && \
 USER appuser
 
 # Command to run the executable
-CMD ["./upload-file-cmd"]
+CMD ["/home/appuser/upload-file-cmd"]
