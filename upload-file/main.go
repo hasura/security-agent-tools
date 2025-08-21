@@ -96,13 +96,8 @@ func getPresignedUploadURL(destination, securityAgentAPIEndpoint, securityAgentA
 			}
 		}
 	`)
-
-	// TODO: move to an apt auth mode
-	req.Header.Set("x-hasura-ddn-token", securityAgentAPIKey)
-	// log.Printf("Using API key: %s...", securityAgentAPIKey[:min(10, len(securityAgentAPIKey))])
-
-	// Set the variable
 	req.Var("name", destination)
+	req.Header.Set("Authorization", "Bearer "+securityAgentAPIKey)
 
 	// Set context with timeout
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
