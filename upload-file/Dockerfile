@@ -26,14 +26,15 @@ RUN apk --no-cache add ca-certificates
 RUN addgroup -g 1001 -S appgroup && \
     adduser -u 1001 -S appuser -G appgroup
 
-# Set working directory
-WORKDIR /root/
+# Set working directory to a location accessible by appuser
+WORKDIR /home/appuser
 
 # Copy the binary from builder stage
 COPY --from=builder /app/upload-file-cmd .
 
 # Change ownership to non-root user
-RUN chown appuser:appgroup upload-file-cmd
+RUN chown appuser:appgroup upload-file-cmd && \
+    chmod +x upload-file-cmd
 
 # Switch to non-root user
 USER appuser
