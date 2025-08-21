@@ -23,8 +23,8 @@ inputs:
 runs:
   using: "docker"
   image: "Dockerfile"
-  args:
-    - ${{ inputs.file_path }}
-    - ${{ inputs.destination }}
-    - ${{ inputs.security_agent_api_endpoint }}
-    - ${{ inputs.security_agent_api_key }}
+  env:
+    INPUT_FILE_PATH: ${{ inputs.file_path }}
+    INPUT_DESTINATION: ${{ inputs.destination }}
+    INPUT_SECURITY_AGENT_API_ENDPOINT: ${{ inputs.security_agent_api_endpoint }}
+    INPUT_SECURITY_AGENT_API_KEY: ${{ inputs.security_agent_api_key }}
