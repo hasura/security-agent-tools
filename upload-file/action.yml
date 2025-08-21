@@ -12,7 +12,7 @@ inputs:
     required: true
   destination:
     description: "Destination path or URL for the upload"
-    required: true
+    required: false
   security_agent_api_endpoint:
     description: "Security Agent API endpoint"
     required: true

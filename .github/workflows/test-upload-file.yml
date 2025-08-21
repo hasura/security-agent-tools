@@ -1,0 +1,36 @@
+name: Test Upload File Action
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "upload-file/**"
+  pull_request:
+    branches: [main]
+    paths:
+      - "upload-file/**"
+  workflow_dispatch:
+
+jobs:
+  test-upload-file:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Create test file
+        run: |
+          cat > test-upload.json << 'EOF'
+          {
+            "message": "This is a test file for upload action",
+            "created_at": "$(date -Iseconds)",
+          }
+          EOF
+
+      - name: Test Upload File Action
+        uses: ./upload-file
+        with:
+          file_path: test-upload.json
+          security_agent_api_endpoint: ${{ secrets.SECURITY_AGENT_API_ENDPOINT }}
+          security_agent_api_key: ${{ secrets.SECURITY_AGENT_API_KEY }}
