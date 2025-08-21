@@ -5,7 +5,6 @@ import (
 	"context"
 	"crypto/sha256"
 	"encoding/hex"
-	"encoding/json"
 	"fmt"
 	"io"
 	"log"
@@ -122,22 +121,8 @@ func getPresignedUploadURL(destination, securityAgentAPIEndpoint, securityAgentA
 
 	// Execute the request with raw response capture
 	var response PresignedUploadResponse
-	var rawResponse interface{}
 
-	// First, try to get the raw response to see what we're actually getting
-	err := client.Run(ctx, req, &rawResponse)
-	if rawResponse != nil {
-		// Log the raw response for debugging
-		rawJSON, _ := json.MarshalIndent(rawResponse, "", "  ")
-		log.Printf("Raw GraphQL response: %s", string(rawJSON))
-	}
-	if err != nil {
-		log.Printf("GraphQL request failed with error: %v", err)
-		return "", fmt.Errorf("GraphQL request failed: %v", err)
-	}
-
-	// Now try to parse into our expected structure
-	err = client.Run(ctx, req, &response)
+	err := client.Run(ctx, req, &response)
 	if err != nil {
 		log.Printf("Failed to parse GraphQL response into expected structure: %v", err)
 		return "", fmt.Errorf("GraphQL request failed: %v", err)
