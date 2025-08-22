@@ -5,6 +5,7 @@ import (
 	"context"
 	"crypto/sha256"
 	"encoding/hex"
+	"encoding/json"
 	"fmt"
 	"io"
 	"log"
@@ -166,8 +167,24 @@ func uploadFile(filePath, destination, securityAgentAPIEndpoint, securityAgentAP
 			return fmt.Errorf("failed to get presigned upload URL: %v", err)
 		}
 
+		metadataJSON, err := json.Marshal(metadata)
+		if err != nil {
+			return fmt.Errorf("failed to marshal metadata: %v", err)
+		}
+
+		metadataFile, err := os.CreateTemp("", "metadata.json")
+		if err != nil {
+			return fmt.Errorf("failed to create temp metadata file: %v", err)
+		}
+		defer os.Remove(metadataFile.Name())
+
+		_, err = metadataFile.Write(metadataJSON)
+		if err != nil {
+			return fmt.Errorf("failed to write metadata to temp file: %v", err)
+		}
+
 		log.Println("Uploading metadata to S3")
-		err = uploadFileToS3(filePath, presignedURL)
+		err = uploadFileToS3(metadataFile.Name(), presignedURL)
 		if err != nil {
 			return fmt.Errorf("failed to upload file to S3: %v", err)
 		}
@@ -222,8 +239,7 @@ func getPresignedUploadURL(destination, securityAgentAPIEndpoint, securityAgentA
 }
 
 // uploadFileToS3 uploads the file to S3 using the presigned URL
-func uploadFileToS3(filePath, presignedURL string) error {
-	// Open the file
+func uploadFileToS3(filePath string, presignedURL string) error {
 	file, err := os.Open(filePath)
 	if err != nil {
 		return fmt.Errorf("failed to open file: %v", err)
