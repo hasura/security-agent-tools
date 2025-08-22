@@ -95,12 +95,14 @@ func uploadFile(filePath, destination, securityAgentAPIEndpoint, securityAgentAP
 
 	type Metadata struct {
 		OriginalFileName string            `json:"original_file_name"`
+		FileContentPath  string            `json:"file_content_path"`
 		GitHubMetadata   map[string]string `json:"github_metadata"`
 		Tags             map[string]string `json:"tags"`
 	}
 
 	var metadata Metadata
 	metadata.OriginalFileName = filepath.Base(filePath)
+	metadata.FileContentPath = destination
 	metadata.GitHubMetadata = make(map[string]string)
 	metadata.Tags = make(map[string]string)
 
