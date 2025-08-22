@@ -92,6 +92,89 @@ func uploadFile(filePath, destination, securityAgentAPIEndpoint, securityAgentAP
 		return fmt.Errorf("failed to upload file to S3: %v", err)
 	}
 
+	type Metadata struct {
+		OriginalFileName string            `json:"original_file_name"`
+		GitHubMetadata   map[string]string `json:"github_metadata"`
+		Tags             map[string]string `json:"tags"`
+	}
+
+	var metadata Metadata
+	metadata.OriginalFileName = filepath.Base(filePath)
+	githubActionEnvVars := []string{
+		"GITHUB_JOB",
+		"GITHUB_REF",
+		"GITHUB_SHA",
+		"GITHUB_REPOSITORY",
+		"GITHUB_REPOSITORY_OWNER",
+		"GITHUB_REPOSITORY_OWNER_ID",
+		"GITHUB_RUN_ID",
+		"GITHUB_RUN_NUMBER",
+		"GITHUB_RETENTION_DAYS",
+		"GITHUB_RUN_ATTEMPT",
+		"GITHUB_ACTOR_ID",
+		"GITHUB_ACTOR",
+		"GITHUB_WORKFLOW",
+		"GITHUB_HEAD_REF",
+		"GITHUB_BASE_REF",
+		"GITHUB_EVENT_NAME",
+		"GITHUB_SERVER_URL",
+		"GITHUB_API_URL",
+		"GITHUB_GRAPHQL_URL",
+		"GITHUB_REF_NAME",
+		"GITHUB_REF_PROTECTED",
+		"GITHUB_REF_TYPE",
+		"GITHUB_WORKFLOW_REF",
+		"GITHUB_WORKFLOW_SHA",
+		"GITHUB_REPOSITORY_ID",
+		"GITHUB_TRIGGERING_ACTOR",
+		"GITHUB_WORKSPACE",
+		"GITHUB_ACTION",
+		"GITHUB_EVENT_PATH",
+		"GITHUB_ACTION_REPOSITORY",
+		"GITHUB_ACTION_REF",
+		"GITHUB_PATH",
+		"GITHUB_ENV",
+		"GITHUB_STEP_SUMMARY",
+		"GITHUB_STATE",
+		"GITHUB_OUTPUT",
+		"RUNNER_OS",
+		"RUNNER_ARCH",
+		"RUNNER_NAME",
+		"RUNNER_ENVIRONMENT",
+		"RUNNER_TOOL_CACHE",
+		"RUNNER_TEMP",
+		"RUNNER_WORKSPACE",
+		"ACTIONS_RUNTIME_URL",
+		"ACTIONS_RUNTIME_TOKEN",
+		"ACTIONS_CACHE_URL",
+		"ACTIONS_ID_TOKEN_REQUEST_URL",
+		"ACTIONS_ID_TOKEN_REQUEST_TOKEN",
+		"ACTIONS_RESULTS_URL",
+		"GITHUB_ACTIONS",
+		"CI",
+	}
+
+	if os.Getenv("GITHUB_ACTIONS") == "true" {
+		metadataUploadPath := "metadata/" + os.Getenv("GITHUB_REPOSITORY") + "/" + os.Getenv("GITHUB_REF") + "/" + os.Getenv("GITHUB_SHA") + ".json"
+		for _, envVar := range githubActionEnvVars {
+			metadata.GitHubMetadata[envVar] = os.Getenv(envVar)
+		}
+
+		log.Println("Getting presigned URL for metadata upload", metadataUploadPath)
+		presignedURL, err := getPresignedUploadURL(metadataUploadPath, securityAgentAPIEndpoint, securityAgentAPIKey)
+		if err != nil {
+			return fmt.Errorf("failed to get presigned upload URL: %v", err)
+		}
+
+		log.Println("Uploading metadata to S3")
+		err = uploadFileToS3(filePath, presignedURL)
+		if err != nil {
+			return fmt.Errorf("failed to upload file to S3: %v", err)
+		}
+
+		log.Println("Metadata upload completed successfully")
+	}
+
 	log.Printf("File uploaded successfully to: %s", destination)
 	return nil
 }
