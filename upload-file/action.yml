@@ -11,11 +11,12 @@ inputs:
     description: "Path to the file to upload"
     required: true
   destination:
-    description: "Destination path or URL for the upload"
+    description: "Destination path in security agent storage bucket"
     required: false
   security_agent_api_endpoint:
     description: "Security Agent API endpoint"
-    required: true
+    required: false
+    default: https://security-agent.ddn.pro.hasura.io/graphql
   security_agent_api_key:
     description: "Security Agent API key"
     required: true
