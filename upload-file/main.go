@@ -101,6 +101,9 @@ func uploadFile(filePath, destination, securityAgentAPIEndpoint, securityAgentAP
 
 	var metadata Metadata
 	metadata.OriginalFileName = filepath.Base(filePath)
+	metadata.GitHubMetadata = make(map[string]string)
+	metadata.Tags = make(map[string]string)
+
 	githubActionEnvVars := []string{
 		"GITHUB_JOB",
 		"GITHUB_REF",
