@@ -27,7 +27,7 @@ func ServiceMetadata(ctx context.Context, c *Client, in *input.Input) error {
 		HTTPSCloneURL  string `json:"https_clone_url"`
 		SSHCloneURL    string `json:"ssh_clone_url"`
 		SourceCodePath string `json:"source_code_path"`
-		DockerfilePath string `json:"dockerfile_path"`
+		DockerfilePath string `json:"docker_file_path"`
 	}
 	type Metadata struct {
 		ServiceName string `json:"service_name"`
@@ -37,7 +37,7 @@ func ServiceMetadata(ctx context.Context, c *Client, in *input.Input) error {
 		ServiceName: serviceName,
 		Scm: Scm{
 			SourceCodePath: in.Tags["source_code_path"],
-			DockerfilePath: in.Tags["dockerfile_path"],
+			DockerfilePath: in.Tags["docker_file_path"],
 		},
 	}
 
