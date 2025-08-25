@@ -6,12 +6,13 @@ import (
 	"fmt"
 	"log"
 	"os"
+
+	"github.com/hasura/security-agent-tools/upload-file/input"
 )
 
 var (
 	ErrNotInGitHubAction = fmt.Errorf("not in GitHub action")
 
-	ghActionUploadPath  = "metadata/github-actions" + os.Getenv("GITHUB_REPOSITORY") + "/" + os.Getenv("GITHUB_REF") + "/" + os.Getenv("GITHUB_SHA") + ".json"
 	githubActionEnvVars = []string{
 		"GITHUB_JOB",
 		"GITHUB_REF",
@@ -67,16 +68,27 @@ var (
 	}
 )
 
-func GitHubActionMetadata(ctx context.Context, c *Client) error {
+func uploadGitHubActionMetadata(ctx context.Context, c *Client, in *input.Input) error {
 	if os.Getenv("GITHUB_ACTIONS") != "true" {
 		return ErrNotInGitHubAction
 	}
 
-	ghMetadata := make(map[string]string)
-	for _, envVar := range githubActionEnvVars {
-		ghMetadata[envVar] = os.Getenv(envVar)
+	type Metadata struct {
+		ScanReportPath string            `json:"scan_report_path"`
+		Env            map[string]string `json:"env"`
+		Tags           map[string]string `json:"tags"`
 	}
-	metadataJSON, err := json.Marshal(ghMetadata)
+
+	metadata := Metadata{
+		ScanReportPath: in.Destination,
+		Env:            make(map[string]string),
+		Tags:           in.Tags,
+	}
+
+	for _, envVar := range githubActionEnvVars {
+		metadata.Env[envVar] = os.Getenv(envVar)
+	}
+	metadataJSON, err := json.Marshal(metadata)
 	if err != nil {
 		return fmt.Errorf("failed to marshal metadata: %v", err)
 	}
@@ -93,7 +105,7 @@ func GitHubActionMetadata(ctx context.Context, c *Client) error {
 	}
 
 	log.Println("Uploading GitHub Action metadata")
-	err = c.UploadFile(ctx, metadataFile.Name(), ghActionUploadPath)
+	err = c.UploadFile(ctx, metadataFile.Name(), servicePath(in.Tags["service"], "github-actions/"+os.Getenv("GITHUB_REPOSITORY")+"/"+os.Getenv("GITHUB_REF")+"/"+os.Getenv("GITHUB_SHA")+".json"))
 	if err != nil {
 		return fmt.Errorf("failed to upload metadata: %v", err)
 	}

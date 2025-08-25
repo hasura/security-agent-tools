@@ -23,15 +23,8 @@ func main() {
 		log.Fatalf("Upload failed: %v", err)
 	}
 
-	switch err := upload.GitHubActionMetadata(context.Background(), c); err {
-	case upload.ErrNotInGitHubAction:
-		log.Println("Skipping GitHub action metadata upload, as we are not in GitHub action")
-	default:
-		log.Fatalf("Failed to upload metadata: %v", err)
-	}
-
 	if serviceName := input.Tags["service"]; serviceName != "" {
-		err = upload.ServiceMetadata(context.Background(), c, serviceName, input.Tags["source_code_path"], input.Tags["dockerfile_path"])
+		err = upload.ServiceMetadata(context.Background(), c, input)
 		if err != nil {
 			log.Fatalf("Failed to upload metadata: %v", err)
 		}
