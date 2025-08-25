@@ -68,7 +68,7 @@ var (
 )
 
 func GitHubActionMetadata(ctx context.Context, c *Client) error {
-	if os.Getenv("GITHUB_ACTIONS") == "true" {
+	if os.Getenv("GITHUB_ACTIONS") != "true" {
 		return ErrNotInGitHubAction
 	}
 
