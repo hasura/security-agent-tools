@@ -8,6 +8,10 @@ import (
 	"os"
 )
 
+const (
+	ServiceMetadataUploadPath = "metadata/services"
+)
+
 func ServiceMetadata(ctx context.Context, c *Client, serviceName, sourceCodePath, dockerfilePath string) error {
 	type Scm struct {
 		RepoURL        string `json:"repo_url"`
@@ -51,7 +55,7 @@ func ServiceMetadata(ctx context.Context, c *Client, serviceName, sourceCodePath
 	}
 
 	log.Println("Uploading Service metadata")
-	serviceMetadataUploadPath := "metadata/service/" + serviceName + ".json"
+	serviceMetadataUploadPath := ServiceMetadataUploadPath + "/" + serviceName + ".json"
 	err = c.UploadFile(ctx, metadataFile.Name(), serviceMetadataUploadPath)
 	if err != nil {
 		return fmt.Errorf("failed to upload metadata: %v", err)
