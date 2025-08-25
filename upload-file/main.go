@@ -3,8 +3,6 @@ package main
 import (
 	"bytes"
 	"context"
-	"crypto/sha256"
-	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -14,42 +12,18 @@ import (
 	"path/filepath"
 	"time"
 
+	"github.com/hasura/security-agent-tools/upload-file/input"
 	"github.com/machinebox/graphql"
 )
 
 func main() {
-	// Get inputs from environment variables (GitHub Actions way)
-	filePath := os.Getenv("INPUT_FILE_PATH")
-	destination := os.Getenv("INPUT_DESTINATION")
-	securityAgentAPIEndpoint := os.Getenv("INPUT_SECURITY_AGENT_API_ENDPOINT")
-	securityAgentAPIKey := os.Getenv("INPUT_SECURITY_AGENT_API_KEY")
-
-	if filePath == "" {
-		log.Fatal("file-path input is required")
-	}
-	// Validate that the file path is a JSON file
-	if filepath.Ext(filePath) != ".json" {
-		log.Fatalf("file must be a JSON file, got: %s", filePath)
+	input, err := input.Parse()
+	if err != nil {
+		log.Fatalln(err)
+		return
 	}
 
-	if securityAgentAPIEndpoint == "" {
-		log.Fatal("security-agent-api-endpoint input is required")
-	}
-	if securityAgentAPIKey == "" {
-		log.Fatal("security-agent-api-key input is required")
-	}
-
-	if destination == "" {
-		// Calculate SHA256 of file contents
-		hash, err := calculateFileSHA256(filePath)
-		if err != nil {
-			log.Fatalf("Failed to calculate file hash: %v", err)
-		}
-		destination = "uploads/" + hash + ".json"
-	}
-
-	// Perform the upload
-	err := uploadFile(filePath, destination, securityAgentAPIEndpoint, securityAgentAPIKey)
+	err = uploadFile(input.FilePath, input.Destination, input.SecurityAgentAPIEndpoint, input.SecurityAgentAPIToken)
 	if err != nil {
 		log.Fatalf("Upload failed: %v", err)
 	}
@@ -321,22 +295,4 @@ func getContentType(filePath string) string {
 	default:
 		return "application/octet-stream"
 	}
-}
-
-// calculateFileSHA256 calculates the SHA256 hash of a file's contents
-func calculateFileSHA256(filePath string) (string, error) {
-	file, err := os.Open(filePath)
-	if err != nil {
-		return "", fmt.Errorf("failed to open file: %v", err)
-	}
-	defer file.Close()
-
-	hasher := sha256.New()
-	_, err = io.Copy(hasher, file)
-	if err != nil {
-		return "", fmt.Errorf("failed to read file for hashing: %v", err)
-	}
-
-	hashBytes := hasher.Sum(nil)
-	return hex.EncodeToString(hashBytes), nil
 }
