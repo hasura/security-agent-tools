@@ -20,6 +20,9 @@ inputs:
   security_agent_api_key:
     description: "Security Agent API key"
     required: true
+  tags:
+    description: "key value pairs of tags separated by comma, e.g. key1=value1,key2=value2"
+    required: false
 
 runs:
   using: "docker"
@@ -29,3 +32,4 @@ runs:
     INPUT_DESTINATION: ${{ inputs.destination }}
     INPUT_SECURITY_AGENT_API_ENDPOINT: ${{ inputs.security_agent_api_endpoint }}
     INPUT_SECURITY_AGENT_API_KEY: ${{ inputs.security_agent_api_key }}
+    INPUT_TAGS: ${{ inputs.tags }}
