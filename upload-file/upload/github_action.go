@@ -97,7 +97,7 @@ func GitHubActionMetadata(ctx context.Context, c *Client) error {
 	if err != nil {
 		return fmt.Errorf("failed to upload metadata: %v", err)
 	}
+	log.Println("GitHub Action upload completed successfully")
 
-	log.Println("Metadata upload completed successfully")
 	return nil
 }

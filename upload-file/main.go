@@ -30,5 +30,12 @@ func main() {
 		log.Fatalf("Failed to upload metadata: %v", err)
 	}
 
+	if serviceName := input.Tags["service"]; serviceName != "" {
+		err = upload.ServiceMetadata(context.Background(), c, serviceName)
+		if err != nil {
+			log.Fatalf("Failed to upload metadata: %v", err)
+		}
+	}
+
 	fmt.Printf("Upload completed successfully\n")
 }
