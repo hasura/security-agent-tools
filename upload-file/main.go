@@ -31,7 +31,7 @@ func main() {
 	}
 
 	if serviceName := input.Tags["service"]; serviceName != "" {
-		err = upload.ServiceMetadata(context.Background(), c, serviceName)
+		err = upload.ServiceMetadata(context.Background(), c, serviceName, input.Tags["source_code_path"], input.Tags["dockerfile_path"])
 		if err != nil {
 			log.Fatalf("Failed to upload metadata: %v", err)
 		}

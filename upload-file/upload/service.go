@@ -8,9 +8,30 @@ import (
 	"os"
 )
 
-func ServiceMetadata(ctx context.Context, c *Client, serviceName string) error {
-	metadata := map[string]string{
-		"service_name": serviceName,
+func ServiceMetadata(ctx context.Context, c *Client, serviceName, sourceCodePath, dockerfilePath string) error {
+	type Scm struct {
+		RepoURL        string `json:"repo_url"`
+		HTTPSCloneURL  string `json:"https_clone_url"`
+		SSHCloneURL    string `json:"ssh_clone_url"`
+		SourceCodePath string `json:"source_code_path"`
+		DockerfilePath string `json:"dockerfile_path"`
+	}
+	type Metadata struct {
+		ServiceName string `json:"service_name"`
+		Scm         Scm    `json:"scm"`
+	}
+	metadata := Metadata{
+		ServiceName: serviceName,
+		Scm: Scm{
+			SourceCodePath: sourceCodePath,
+			DockerfilePath: dockerfilePath,
+		},
+	}
+
+	if os.Getenv("GITHUB_REPOSITORY") != "" {
+		metadata.Scm.RepoURL = "https://github.com/" + os.Getenv("GITHUB_REPOSITORY")
+		metadata.Scm.HTTPSCloneURL = "https://github.com/" + os.Getenv("GITHUB_REPOSITORY") + ".git"
+		metadata.Scm.SSHCloneURL = "git@github.com:" + os.Getenv("GITHUB_REPOSITORY") + ".git"
 	}
 
 	metadataJSON, err := json.Marshal(metadata)
