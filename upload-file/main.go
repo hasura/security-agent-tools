@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"log"
 
 	"github.com/hasura/security-agent-tools/upload-file/input"
@@ -22,13 +21,10 @@ func main() {
 	if err != nil {
 		log.Fatalf("Upload failed: %v", err)
 	}
+	log.Printf("Upload successful: %s -> %s\n", input.FilePath, input.Destination)
 
-	if serviceName := input.Tags["service"]; serviceName != "" {
-		err = upload.ServiceMetadata(context.Background(), c, input)
-		if err != nil {
-			log.Fatalf("Failed to upload metadata: %v", err)
-		}
+	err = upload.ServiceMetadata(context.Background(), c, input)
+	if err != nil {
+		log.Fatalf("Failed to upload metadata: %v", err)
 	}
-
-	fmt.Printf("Upload completed successfully\n")
 }

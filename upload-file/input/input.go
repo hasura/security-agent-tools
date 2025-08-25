@@ -75,8 +75,12 @@ func Parse() (*Input, error) {
 
 func parseTags(tags string) map[string]string {
 	tagMap := make(map[string]string)
-	for _, tag := range strings.Split(tags, ",") {
-		kv := strings.Split(tag, "=")
+	for _, tag := range strings.Split(tags, "\n") {
+		tag = strings.TrimSpace(tag)
+		if tag == "" {
+			continue
+		}
+		kv := strings.SplitN(tag, "=", 2)
 		if len(kv) == 2 {
 			tagMap[kv[0]] = kv[1]
 		}
