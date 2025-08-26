@@ -77,6 +77,13 @@ func ServiceMetadata(ctx context.Context, c *Client, in *input.Input) error {
 		return err
 	}
 
+	switch err := uploadBuildkiteMetadata(context.Background(), c, in); err {
+	case ErrNotInBuildkite:
+		log.Println("Skipping Buildkite metadata upload, as we are not in Buildkite")
+	default:
+		return err
+	}
+
 	return nil
 }
 
