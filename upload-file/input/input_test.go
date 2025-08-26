@@ -1,6 +1,7 @@
 package input
 
 import (
+	"os"
 	"reflect"
 	"testing"
 )
@@ -83,6 +84,115 @@ func TestParseTags(t *testing.T) {
 			result := parseTags(tt.input)
 			if !reflect.DeepEqual(result, tt.expected) {
 				t.Errorf("parseTags(%q) = %v, want %v", tt.input, result, tt.expected)
+			}
+		})
+	}
+}
+
+func TestParseSecurityAgentAPIEndpoint(t *testing.T) {
+	// Create a temporary test file for the tests
+	testFile := "test-file.json"
+	testContent := `{"test": "data"}`
+
+	// Clean up function
+	cleanup := func() {
+		os.Remove(testFile)
+	}
+	defer cleanup()
+
+	// Create test file
+	if err := os.WriteFile(testFile, []byte(testContent), 0644); err != nil {
+		t.Fatalf("Failed to create test file: %v", err)
+	}
+
+	tests := []struct {
+		name             string
+		envEndpoint      string
+		envAPIKey        string
+		envFilePath      string
+		expectedEndpoint string
+		expectError      bool
+	}{
+		{
+			name:             "uses custom endpoint from environment variable",
+			envEndpoint:      "https://custom-security-agent.example.com/graphql",
+			envAPIKey:        "test-api-key",
+			envFilePath:      testFile,
+			expectedEndpoint: "https://custom-security-agent.example.com/graphql",
+			expectError:      false,
+		},
+		{
+			name:             "uses default endpoint when environment variable is empty",
+			envEndpoint:      "",
+			envAPIKey:        "test-api-key",
+			envFilePath:      testFile,
+			expectedEndpoint: "https://security-agent.ddn.pro.hasura.io/graphql",
+			expectError:      false,
+		},
+		{
+			name:             "uses default endpoint when environment variable is not set",
+			envEndpoint:      "", // Will be unset in test
+			envAPIKey:        "test-api-key",
+			envFilePath:      testFile,
+			expectedEndpoint: "https://security-agent.ddn.pro.hasura.io/graphql",
+			expectError:      false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// Save original environment variables
+			originalEndpoint := os.Getenv("INPUT_SECURITY_AGENT_API_ENDPOINT")
+			originalAPIKey := os.Getenv("INPUT_SECURITY_AGENT_API_KEY")
+			originalFilePath := os.Getenv("INPUT_FILE_PATH")
+
+			// Clean up environment variables after test
+			defer func() {
+				if originalEndpoint != "" {
+					os.Setenv("INPUT_SECURITY_AGENT_API_ENDPOINT", originalEndpoint)
+				} else {
+					os.Unsetenv("INPUT_SECURITY_AGENT_API_ENDPOINT")
+				}
+				if originalAPIKey != "" {
+					os.Setenv("INPUT_SECURITY_AGENT_API_KEY", originalAPIKey)
+				} else {
+					os.Unsetenv("INPUT_SECURITY_AGENT_API_KEY")
+				}
+				if originalFilePath != "" {
+					os.Setenv("INPUT_FILE_PATH", originalFilePath)
+				} else {
+					os.Unsetenv("INPUT_FILE_PATH")
+				}
+			}()
+
+			// Set test environment variables
+			if tt.envEndpoint != "" {
+				os.Setenv("INPUT_SECURITY_AGENT_API_ENDPOINT", tt.envEndpoint)
+			} else {
+				os.Unsetenv("INPUT_SECURITY_AGENT_API_ENDPOINT")
+			}
+			os.Setenv("INPUT_SECURITY_AGENT_API_KEY", tt.envAPIKey)
+			os.Setenv("INPUT_FILE_PATH", tt.envFilePath)
+
+			// Call Parse function
+			result, err := Parse()
+
+			// Check error expectation
+			if tt.expectError && err == nil {
+				t.Errorf("Expected error but got none")
+				return
+			}
+			if !tt.expectError && err != nil {
+				t.Errorf("Unexpected error: %v", err)
+				return
+			}
+
+			// Check endpoint value if no error expected
+			if !tt.expectError {
+				if result.SecurityAgentAPIEndpoint != tt.expectedEndpoint {
+					t.Errorf("SecurityAgentAPIEndpoint = %q, want %q",
+						result.SecurityAgentAPIEndpoint, tt.expectedEndpoint)
+				}
 			}
 		})
 	}
