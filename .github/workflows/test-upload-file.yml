@@ -3,12 +3,8 @@ name: Test Upload File Action
 on:
   push:
     branches: [main]
-    paths:
-      - "upload-file/**"
   pull_request:
     branches: [main]
-    paths:
-      - "upload-file/**"
   workflow_dispatch:
 
 jobs:
