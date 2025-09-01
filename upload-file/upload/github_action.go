@@ -95,7 +95,7 @@ func uploadGitHubActionMetadata(ctx context.Context, c *Client, in *input.Input)
 	}
 
 	log.Println("Uploading GitHub Action metadata")
-	err = c.UploadViaReader(ctx, bytes.NewReader(metadataJSON), "application/json", servicePath(in.Tags["service"], "github-actions/"+os.Getenv("GITHUB_REF")+"/"+os.Getenv("GITHUB_SHA")+".json"))
+	err = c.UploadViaReader(ctx, bytes.NewReader(metadataJSON), ContentTypeJSON, servicePath(in.Tags["service"], "github-actions/"+os.Getenv("GITHUB_REF")+"/"+os.Getenv("GITHUB_SHA")+".json"))
 	if err != nil {
 		return fmt.Errorf("failed to upload metadata: %v", err)
 	}

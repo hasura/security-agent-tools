@@ -101,7 +101,7 @@ func uploadBuildkiteMetadata(ctx context.Context, c *Client, in *input.Input) er
 	uploadPath = servicePath(serviceName, fmt.Sprintf("buildkite/%s/%s", buildkitePipelineSlug, uploadPath))
 
 	log.Println("Uploading Buildkite metadata")
-	err = c.UploadViaReader(ctx, bytes.NewReader(metadataJSON), "application/json", uploadPath)
+	err = c.UploadViaReader(ctx, bytes.NewReader(metadataJSON), ContentTypeJSON, uploadPath)
 	if err != nil {
 		return fmt.Errorf("failed to upload metadata: %v", err)
 	}

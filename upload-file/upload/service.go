@@ -54,7 +54,7 @@ func ServiceMetadata(ctx context.Context, c *Client, in *input.Input) error {
 	}
 
 	log.Println("Uploading Service metadata")
-	err = c.UploadViaReader(ctx, bytes.NewReader(metadataJSON), "application/json", servicePath(serviceName, "metadata.json"))
+	err = c.UploadViaReader(ctx, bytes.NewReader(metadataJSON), ContentTypeJSON, servicePath(serviceName, "metadata.json"))
 	if err != nil {
 		return fmt.Errorf("failed to upload metadata: %v", err)
 	}
