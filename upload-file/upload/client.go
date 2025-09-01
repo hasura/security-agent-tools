@@ -132,6 +132,7 @@ func (c *Client) rawUpload(ctx context.Context, uploadURL string, contentType Co
 }
 
 func (c *Client) UploadViaReader(ctx context.Context, r io.Reader, contentType ContentType, destination string) error {
+	log.Println("Uploading to: ", destination)
 	// Buffer the content to determine size
 	var buf bytes.Buffer
 	size, err := io.Copy(&buf, r)
