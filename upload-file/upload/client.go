@@ -109,13 +109,13 @@ func (c *Client) UploadFile(ctx context.Context, sourcePath, destination string)
 	)
 }
 
-func (c *Client) rawUpload(ctx context.Context, uploadURL string, contentType string, contentSize int64, r io.Reader) error {
+func (c *Client) rawUpload(ctx context.Context, uploadURL string, contentType ContentType, contentSize int64, r io.Reader) error {
 	req, err := http.NewRequestWithContext(ctx, "PUT", uploadURL, r)
 	if err != nil {
 		return fmt.Errorf("failed to create HTTP request: %v", err)
 	}
 	req.ContentLength = contentSize
-	req.Header.Set("Content-Type", contentType)
+	req.Header.Set("Content-Type", string(contentType))
 
 	resp, err := c.httpClient.Do(req)
 	if err != nil {
@@ -131,26 +131,22 @@ func (c *Client) rawUpload(ctx context.Context, uploadURL string, contentType st
 	return nil
 }
 
-func getContentType(filePath string) string {
-	ext := filepath.Ext(filePath)
-	switch ext {
-	case ".json":
-		return "application/json"
-	case ".txt":
-		return "text/plain"
-	case ".csv":
-		return "text/csv"
-	case ".xml":
-		return "application/xml"
-	case ".pdf":
-		return "application/pdf"
-	case ".zip":
-		return "application/zip"
-	case ".tar":
-		return "application/x-tar"
-	case ".gz":
-		return "application/gzip"
-	default:
-		return "application/octet-stream"
+func (c *Client) UploadViaReader(ctx context.Context, r io.Reader, contentType ContentType, destination string) error {
+	// Buffer the content to determine size
+	var buf bytes.Buffer
+	size, err := io.Copy(&buf, r)
+	if err != nil {
+		return fmt.Errorf("failed to read content: %v", err)
 	}
+
+	presignedURL, err := c.presignedUploadURL(ctx, destination)
+	if err != nil {
+		return fmt.Errorf("failed to get presigned upload URL: %w", err)
+	}
+
+	return c.rawUpload(ctx,
+		presignedURL,
+		contentType, size,
+		&buf,
+	)
 }

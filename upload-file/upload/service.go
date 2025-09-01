@@ -1,6 +1,7 @@
 package upload
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -52,19 +53,8 @@ func ServiceMetadata(ctx context.Context, c *Client, in *input.Input) error {
 		return fmt.Errorf("failed to marshal metadata: %v", err)
 	}
 
-	metadataFile, err := os.CreateTemp("", "service-metadata.json")
-	if err != nil {
-		return fmt.Errorf("failed to create temp metadata file: %v", err)
-	}
-	defer os.Remove(metadataFile.Name())
-
-	_, err = metadataFile.Write(metadataJSON)
-	if err != nil {
-		return fmt.Errorf("failed to write metadata to temp file: %v", err)
-	}
-
 	log.Println("Uploading Service metadata")
-	err = c.UploadFile(ctx, metadataFile.Name(), servicePath(serviceName, "metadata.json"))
+	err = c.UploadViaReader(ctx, bytes.NewReader(metadataJSON), ContentTypeJSON, servicePath(serviceName, "metadata.json"))
 	if err != nil {
 		return fmt.Errorf("failed to upload metadata: %v", err)
 	}
