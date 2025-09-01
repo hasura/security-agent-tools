@@ -2,22 +2,6 @@
 
 > Tools for working with the PromptQL Security Agent.
 
-```
-$ just help
-
-security-agent-tools:
-  Tools for working with the PromptQL Security Agent.
-  All tools are packaged as Docker image and GitHub Action.
-
-Common commands:
-  setup-env                - Create .env file from example
-
-upload-file:
-  build-upload-file        - Build the upload-file binary locally
-  test-upload-file-local   - Test binary locally (requires .env)
-  test-upload-file-docker  - Test with Docker (uses .env if available)
-```
-
 ## GitHub Actions
 
 An example workflow to build a Docker image and scan it with Trivy, then upload the results to the Security Agent.
@@ -50,4 +34,25 @@ jobs:
             source_code_path=path/to/source-code
             docker_file_path=path/to/source-code/Dockerfile
             scanner=trivy
+```
+
+
+## Development
+
+You can use [just](https://github.com/casey/just) to build and test the tools.
+
+```
+$ just help
+
+security-agent-tools:
+  Tools for working with the PromptQL Security Agent.
+  All tools are packaged as Docker image and GitHub Action.
+
+Common commands:
+  setup-env                - Create .env file from example
+
+upload-file:
+  build-upload-file        - Build the upload-file binary locally
+  test-upload-file-local   - Test binary locally (requires .env)
+  test-upload-file-docker  - Test with Docker (uses .env if available)
 ```
