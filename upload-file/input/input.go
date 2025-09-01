@@ -66,9 +66,6 @@ func Parse() (*Input, error) {
 	input.Destination = destination
 
 	metadataUploadPath := os.Getenv("INPUT_METADATA_UPLOAD_PATH")
-	if metadataUploadPath == "" {
-		metadataUploadPath = "metadata/services"
-	}
 	input.MetadataUploadPath = metadataUploadPath
 
 	tags := os.Getenv("INPUT_TAGS")
