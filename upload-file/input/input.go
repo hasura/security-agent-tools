@@ -15,6 +15,7 @@ import (
 type Input struct {
 	FilePath                 string
 	Destination              string
+	MetadataUploadPath       string
 	SecurityAgentAPIEndpoint string
 	SecurityAgentAPIToken    string
 	Tags                     map[string]string
@@ -63,6 +64,8 @@ func Parse() (*Input, error) {
 		destination = "uploads/" + hash + ".json"
 	}
 	input.Destination = destination
+
+	input.MetadataUploadPath = os.Getenv("INPUT_METADATA_UPLOAD_PATH")
 
 	tags := os.Getenv("INPUT_TAGS")
 	if tags != "" {

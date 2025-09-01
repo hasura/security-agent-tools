@@ -7,19 +7,25 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strings"
 
 	"github.com/hasura/security-agent-tools/upload-file/input"
 )
 
 const (
+	metadataJSONFileName      = "metadata.json"
 	ServiceMetadataUploadPath = "metadata/services"
 )
 
 func ServiceMetadata(ctx context.Context, c *Client, in *input.Input) error {
 	serviceName := in.Tags["service"]
-	if serviceName == "" {
-		log.Println("No service name provided, skipping service metadata upload")
+	metadataUploadPath := in.MetadataUploadPath
+	if serviceName == "" && metadataUploadPath == "" {
+		log.Println("Skipping metadata upload. Possible fixes:")
+		log.Println("")
 		log.Println("Add `tags: service=my-service-name` to your workflow to upload service metadata")
+		log.Println("---- or ----")
+		log.Println("Add `metadata-upload-path: my/custom/path` to your workflow to upload metadata to a custom path")
 		return nil
 	}
 
@@ -54,7 +60,14 @@ func ServiceMetadata(ctx context.Context, c *Client, in *input.Input) error {
 	}
 
 	log.Println("Uploading Service metadata")
-	err = c.UploadViaReader(ctx, bytes.NewReader(metadataJSON), ContentTypeJSON, servicePath(serviceName, "metadata.json"))
+	uploadPath := ""
+	switch {
+	case serviceName != "":
+		uploadPath = servicePath(serviceName, metadataJSONFileName)
+	case metadataUploadPath != "":
+		uploadPath = metadataPath(metadataUploadPath, metadataJSONFileName)
+	}
+	err = c.UploadViaReader(ctx, bytes.NewReader(metadataJSON), ContentTypeJSON, uploadPath)
 	if err != nil {
 		return fmt.Errorf("failed to upload metadata: %v", err)
 	}
@@ -80,5 +93,9 @@ func ServiceMetadata(ctx context.Context, c *Client, in *input.Input) error {
 // servicePath returns the upload path for a given service and path.
 // path is relative to the service directory.
 func servicePath(serviceName, path string) string {
-	return ServiceMetadataUploadPath + "/" + serviceName + "/" + path
+	return metadataPath("services", serviceName, path)
+}
+
+func metadataPath(parts ...string) string {
+	return "metadata" + "/" + strings.Join(parts, "/")
 }

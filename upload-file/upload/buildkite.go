@@ -81,25 +81,33 @@ func uploadBuildkiteMetadata(ctx context.Context, c *Client, in *input.Input) er
 		return fmt.Errorf("failed to marshal metadata: %v", err)
 	}
 
+	fileName := metadataJSONFileName
+	if buildkiteCommit := os.Getenv("BUILDKITE_COMMIT"); buildkiteCommit != "" {
+		fileName = fmt.Sprintf("%s.json", buildkiteCommit)
+	}
+
 	buildkiteBranch := os.Getenv("BUILDKITE_BRANCH")
 	buildkiteTag := os.Getenv("BUILDKITE_TAG")
-	buildkiteCommit := os.Getenv("BUILDKITE_COMMIT")
 	buildkitePullRequest := os.Getenv("BUILDKITE_PULL_REQUEST")
 	uploadPath := ""
 	switch {
 	case buildkiteBranch != "":
-		uploadPath = fmt.Sprintf("branches/%s/%s.json", buildkiteBranch, buildkiteCommit)
+		uploadPath = fmt.Sprintf("branches/%s/%s", buildkiteBranch, fileName)
 	case buildkiteTag != "":
-		uploadPath = fmt.Sprintf("tags/%s/%s.json", buildkiteTag, buildkiteCommit)
+		uploadPath = fmt.Sprintf("tags/%s/%s", buildkiteTag, fileName)
 	case buildkitePullRequest != "false":
-		uploadPath = fmt.Sprintf("pull-requests/%s/%s.json", buildkitePullRequest, buildkiteCommit)
+		uploadPath = fmt.Sprintf("pull-requests/%s/%s", buildkitePullRequest, fileName)
 	default:
 		return errors.New("failed to determine upload path. Please set at least one of BUILDKITE_BRANCH, BUILDKITE_TAG, BUILDKITE_PULL_REQUEST env vars")
 	}
 	serviceName := in.Tags["service"]
-	buildkitePipelineSlug := os.Getenv("BUILDKITE_PIPELINE_SLUG")
-	uploadPath = servicePath(serviceName, fmt.Sprintf("buildkite/%s/%s", buildkitePipelineSlug, uploadPath))
-
+	switch {
+	case serviceName != "":
+		buildkitePipelineSlug := os.Getenv("BUILDKITE_PIPELINE_SLUG")
+		uploadPath = servicePath(serviceName, fmt.Sprintf("buildkite/%s/%s", buildkitePipelineSlug, uploadPath))
+	case in.MetadataUploadPath != "":
+		uploadPath = metadataPath(in.MetadataUploadPath, "buildkite")
+	}
 	log.Println("Uploading Buildkite metadata")
 	err = c.UploadViaReader(ctx, bytes.NewReader(metadataJSON), ContentTypeJSON, uploadPath)
 	if err != nil {

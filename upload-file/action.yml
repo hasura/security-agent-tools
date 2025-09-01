@@ -13,6 +13,9 @@ inputs:
   destination:
     description: "Destination path in security agent storage bucket"
     required: false
+  metadata_upload_path:
+    description: "Path to upload metadata"
+    required: false
   security_agent_api_endpoint:
     description: "Security Agent API endpoint"
     required: false
@@ -30,6 +33,7 @@ runs:
   env:
     INPUT_FILE_PATH: ${{ inputs.file_path }}
     INPUT_DESTINATION: ${{ inputs.destination }}
+    INPUT_METADATA_UPLOAD_PATH: ${{ inputs.metadata_upload_path }}
     INPUT_SECURITY_AGENT_API_ENDPOINT: ${{ inputs.security_agent_api_endpoint }}
     INPUT_SECURITY_AGENT_API_KEY: ${{ inputs.security_agent_api_key }}
     INPUT_TAGS: ${{ inputs.tags }}
