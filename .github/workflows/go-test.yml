@@ -3,14 +3,8 @@ name: Go Tests
 on:
   push:
     branches: [main]
-    paths:
-      - "upload-file/**"
-      - ".github/workflows/go-test.yml"
   pull_request:
     branches: [main]
-    paths:
-      - "upload-file/**"
-      - ".github/workflows/go-test.yml"
 
 jobs:
   upload-file:
