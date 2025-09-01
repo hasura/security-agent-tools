@@ -1,6 +1,7 @@
 package upload
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"errors"
@@ -79,15 +80,6 @@ func uploadBuildkiteMetadata(ctx context.Context, c *Client, in *input.Input) er
 	if err != nil {
 		return fmt.Errorf("failed to marshal metadata: %v", err)
 	}
-	metadataFile, err := os.CreateTemp("", "buildkite-metadata.json")
-	if err != nil {
-		return fmt.Errorf("failed to create temp metadata file: %v", err)
-	}
-	defer os.Remove(metadataFile.Name())
-	_, err = metadataFile.Write(metadataJSON)
-	if err != nil {
-		return fmt.Errorf("failed to write metadata to temp file: %v", err)
-	}
 
 	buildkiteBranch := os.Getenv("BUILDKITE_BRANCH")
 	buildkiteTag := os.Getenv("BUILDKITE_TAG")
@@ -109,7 +101,7 @@ func uploadBuildkiteMetadata(ctx context.Context, c *Client, in *input.Input) er
 	uploadPath = servicePath(serviceName, fmt.Sprintf("buildkite/%s/%s", buildkitePipelineSlug, uploadPath))
 
 	log.Println("Uploading Buildkite metadata")
-	err = c.UploadFile(ctx, metadataFile.Name(), uploadPath)
+	err = c.UploadViaReader(ctx, bytes.NewReader(metadataJSON), "application/json", uploadPath)
 	if err != nil {
 		return fmt.Errorf("failed to upload metadata: %v", err)
 	}

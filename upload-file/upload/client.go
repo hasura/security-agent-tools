@@ -154,3 +154,23 @@ func getContentType(filePath string) string {
 		return "application/octet-stream"
 	}
 }
+
+func (c *Client) UploadViaReader(ctx context.Context, r io.Reader, contentType, destination string) error {
+	// Buffer the content to determine size
+	var buf bytes.Buffer
+	size, err := io.Copy(&buf, r)
+	if err != nil {
+		return fmt.Errorf("failed to read content: %v", err)
+	}
+
+	presignedURL, err := c.presignedUploadURL(ctx, destination)
+	if err != nil {
+		return fmt.Errorf("failed to get presigned upload URL: %w", err)
+	}
+
+	return c.rawUpload(ctx,
+		presignedURL,
+		contentType, size,
+		&buf,
+	)
+}

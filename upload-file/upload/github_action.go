@@ -1,6 +1,7 @@
 package upload
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -93,19 +94,8 @@ func uploadGitHubActionMetadata(ctx context.Context, c *Client, in *input.Input)
 		return fmt.Errorf("failed to marshal metadata: %v", err)
 	}
 
-	metadataFile, err := os.CreateTemp("", "metadata.json")
-	if err != nil {
-		return fmt.Errorf("failed to create temp metadata file: %v", err)
-	}
-	defer os.Remove(metadataFile.Name())
-
-	_, err = metadataFile.Write(metadataJSON)
-	if err != nil {
-		return fmt.Errorf("failed to write metadata to temp file: %v", err)
-	}
-
 	log.Println("Uploading GitHub Action metadata")
-	err = c.UploadFile(ctx, metadataFile.Name(), servicePath(in.Tags["service"], "github-actions/"+os.Getenv("GITHUB_REF")+"/"+os.Getenv("GITHUB_SHA")+".json"))
+	err = c.UploadViaReader(ctx, bytes.NewReader(metadataJSON), "application/json", servicePath(in.Tags["service"], "github-actions/"+os.Getenv("GITHUB_REF")+"/"+os.Getenv("GITHUB_SHA")+".json"))
 	if err != nil {
 		return fmt.Errorf("failed to upload metadata: %v", err)
 	}
