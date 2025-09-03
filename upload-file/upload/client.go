@@ -51,6 +51,7 @@ func (c *Client) presignedUploadURL(ctx context.Context, destination string) (st
 	`)
 	req.Var("name", destination)
 	req.Header.Set("Authorization", c.securityAgentAPIKey)
+	req.Header.Set("X-Hasura-Auth-Mode", "ci-auth")
 
 	var response PresignedUploadResponse
 	err := c.gqlClient.Run(ctx, req, &response)
