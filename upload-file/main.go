@@ -28,7 +28,7 @@ func main() {
 	if err != nil {
 		log.Fatalf("Failed to create scan: %v", err)
 	}
-	log.Printf("Scan created. ID: %s. Tags: %v\n", scan.ID, scan.Tags)
+	log.Printf("Scan created with ID: %s\n", scan.ID)
 
 	err = metadata.InsertScanReport(context.Background(), c, scan.ID, input.Destination)
 	if err != nil {
