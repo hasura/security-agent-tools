@@ -33,6 +33,13 @@ func NewClient(securityAgentAPIEndpoint, securityAgentAPIKey string) *Client {
 	}
 }
 
+func (c *Client) Do(ctx context.Context, req *graphql.Request, response interface{}) error {
+	req.Header.Set("Authorization", c.securityAgentAPIKey)
+	req.Header.Set("X-Hasura-Auth-Mode", "ci-auth")
+
+	return c.gqlClient.Run(ctx, req, &response)
+}
+
 type PresignedUploadResponse struct {
 	StoragePresignedUploadURL struct {
 		URL       string    `json:"url"`
