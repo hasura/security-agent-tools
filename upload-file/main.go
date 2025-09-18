@@ -35,6 +35,15 @@ func main() {
 		log.Fatalf("Failed to store scan report path in metadata: %v", err)
 	}
 
+	imageName := input.Tags["image_name"]
+	if imageName != "" {
+		err = metadata.AssociateImageNameWithScan(context.Background(), c, scan.ID, imageName)
+		if err != nil {
+			log.Fatalf("Failed to associate image name with scan: %v", err)
+		}
+		log.Printf("Associated image name %s with scan %s\n", imageName, scan.ID)
+	}
+
 	err = upload.ServiceMetadata(context.Background(), c, input)
 	if err != nil {
 		log.Fatalf("Failed to upload metadata: %v", err)
