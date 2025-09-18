@@ -28,3 +28,6 @@ jobs:
         with:
           file_path: test-upload.json
           security_agent_api_key: ${{ secrets.SECURITY_AGENT_API_KEY }}
+          tags: |
+            scanner=trivy
+            image_name=test-image
