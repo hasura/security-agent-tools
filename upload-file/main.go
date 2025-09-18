@@ -5,6 +5,7 @@ import (
 	"log"
 
 	"github.com/hasura/security-agent-tools/upload-file/input"
+	"github.com/hasura/security-agent-tools/upload-file/metadata"
 	"github.com/hasura/security-agent-tools/upload-file/upload"
 )
 
@@ -22,6 +23,12 @@ func main() {
 		log.Fatalf("Upload failed: %v", err)
 	}
 	log.Printf("Upload successful: %s -> %s\n", input.FilePath, input.Destination)
+
+	scan, err := metadata.CreateScan(context.Background(), c, input.Tags)
+	if err != nil {
+		log.Fatalf("Failed to create scan: %v", err)
+	}
+	log.Printf("Scan created. ID: %s. Tags: %v\n", scan.ID, scan.Tags)
 
 	err = upload.ServiceMetadata(context.Background(), c, input)
 	if err != nil {
