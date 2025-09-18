@@ -8,13 +8,16 @@ import (
 )
 
 func InsertScanReport(ctx context.Context, c *upload.Client, scanID, reportPath string) error {
-	req := graphql.NewRequest(`mutation InsertScanReport($report_uri: string!) {
-  insert_vulnerability_reports_scan_reports(objects: {report_uri: $report_uri}) {
+	req := graphql.NewRequest(`mutation InsertScanReport($scan_id: uuid, $report_uri: string!) {
+  insert_vulnerability_reports_scan_reports(
+    objects: {scan_id: $scan_id, report_uri: $report_uri}
+  ) {
     returning {
       id
     }
   }
 }`)
+	req.Var("scan_id", scanID)
 	req.Var("report_uri", reportPath)
 
 	var response struct {
