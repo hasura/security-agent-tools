@@ -28,3 +28,5 @@ jobs:
         with:
           file_path: test-upload.json
           security_agent_api_key: ${{ secrets.SECURITY_AGENT_API_KEY }}
+          # TODO: remove before merging
+          security_agent_api_endpoint: https://security-agent-9f24828551.ddn.pro.hasura.io/graphql
