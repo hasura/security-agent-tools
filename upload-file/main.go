@@ -30,6 +30,11 @@ func main() {
 	}
 	log.Printf("Scan created. ID: %s. Tags: %v\n", scan.ID, scan.Tags)
 
+	err = metadata.InsertScanReport(context.Background(), c, scan.ID, input.Destination)
+	if err != nil {
+		log.Fatalf("Failed to store scan report path in metadata: %v", err)
+	}
+
 	err = upload.ServiceMetadata(context.Background(), c, input)
 	if err != nil {
 		log.Fatalf("Failed to upload metadata: %v", err)
