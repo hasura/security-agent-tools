@@ -23,7 +23,7 @@ jobs:
           }
           EOF
 
-      - name: Test Upload File Action
+      - name: Test basic upload
         uses: ./upload-file
         with:
           file_path: test-upload.json
@@ -31,6 +31,34 @@ jobs:
           tags: |
             scanner=trivy
             image_name=test-image
-            product_domain=test-domain
+
+      - name: Test image name association
+        uses: ./upload-file
+        with:
+          file_path: test-upload.json
+          security_agent_api_key: ${{ secrets.SECURITY_AGENT_API_KEY }}
+          tags: |
+            image_name=test-image
+
+      - name: Test domain association (invalid)
+        uses: ./upload-file
+        allow-failure: true
+        with:
+          file_path: test-upload.json
+          security_agent_api_key: ${{ secrets.SECURITY_AGENT_API_KEY }}
+          tags: |
+            product_domain=invalid-domain
+          # TODO: remove before merging
+          security_agent_api_endpoint: https://security-agent-dad2e8a5e7.ddn.pro.hasura.io/graphql
+
+      - name: Test domain association (valid)
+        uses: ./upload-file
+        with:
+          file_path: test-upload.json
+          security_agent_api_key: ${{ secrets.SECURITY_AGENT_API_KEY }}
+          tags: |
+            scanner=trivy
+            image_name=test-image
+            product_domain=security-agent-test
           # TODO: remove before merging
           security_agent_api_endpoint: https://security-agent-dad2e8a5e7.ddn.pro.hasura.io/graphql
