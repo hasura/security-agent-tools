@@ -49,7 +49,10 @@ func main() {
 		err = metadata.AssociateProductDomainWithScan(context.Background(), c, scan.ID, domain)
 		if err != nil {
 			pd, _ := metadata.ProductDomains(context.Background(), c)
-			log.Fatalf("Failed to associate product domain with scan: %v. Please check if the value is one of these: %v", err, pd)
+			log.Fatalf("Failed to associate product domain with scan: %v. Please check `product_domain` value is one of the following:\n", err)
+			for _, p := range pd {
+				log.Printf("- %s\n", p)
+			}
 		}
 		log.Printf("Associated product domain %s with scan %s\n", domain, scan.ID)
 	}
