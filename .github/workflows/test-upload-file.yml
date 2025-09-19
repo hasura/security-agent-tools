@@ -31,3 +31,6 @@ jobs:
           tags: |
             scanner=trivy
             image_name=test-image
+            product_domain=test-domain
+          # TODO: remove before merging
+          security_agent_api_endpoint: https://security-agent-dad2e8a5e7.ddn.pro.hasura.io/graphql
