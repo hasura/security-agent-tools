@@ -44,6 +44,16 @@ func main() {
 		log.Printf("Associated image name %s with scan %s\n", imageName, scan.ID)
 	}
 
+	domain := input.Tags["product_domain"]
+	if domain != "" {
+		err = metadata.AssociateProductDomainWithScan(context.Background(), c, scan.ID, domain)
+		if err != nil {
+			pd, _ := metadata.ProductDomains(context.Background(), c)
+			log.Fatalf("Failed to associate product domain with scan: %v. Please check if the value is one of these: %v", err, pd)
+		}
+		log.Printf("Associated product domain %s with scan %s\n", domain, scan.ID)
+	}
+
 	err = upload.ServiceMetadata(context.Background(), c, input)
 	if err != nil {
 		log.Fatalf("Failed to upload metadata: %v", err)
