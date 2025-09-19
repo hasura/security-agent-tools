@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"log"
+	"strings"
 
 	"github.com/hasura/security-agent-tools/upload-file/input"
 	"github.com/hasura/security-agent-tools/upload-file/metadata"
@@ -49,10 +50,11 @@ func main() {
 		err = metadata.AssociateProductDomainWithScan(context.Background(), c, scan.ID, domain)
 		if err != nil {
 			pd, _ := metadata.ProductDomains(context.Background(), c)
-			log.Fatalf("Failed to associate product domain with scan: %v. Please check `product_domain` value is one of the following:\n", err)
+			var pds strings.Builder
 			for _, p := range pd {
-				log.Printf("- %s\n", p)
+				pds.WriteString("- " + p + "\n")
 			}
+			log.Fatalf("Failed to associate product domain with scan: %v. Please check `product_domain` value is one of the following:\n %s", err, pds.String())
 		}
 		log.Printf("Associated product domain %s with scan %s\n", domain, scan.ID)
 	}
