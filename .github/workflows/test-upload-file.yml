@@ -41,6 +41,7 @@ jobs:
             image_name=test-image
 
       - name: Test domain association (invalid)
+        id: invalid-domain-test
         uses: ./upload-file
         continue-on-error: true
         with:
@@ -48,8 +49,18 @@ jobs:
           security_agent_api_key: ${{ secrets.SECURITY_AGENT_API_KEY }}
           tags: |
             product_domain=invalid-domain
-          # TODO: remove before merging
+          # TODO: remove before merge
           security_agent_api_endpoint: https://security-agent-dad2e8a5e7.ddn.pro.hasura.io/graphql
+
+      - name: Assert invalid domain test failed
+        if: steps.invalid-domain-test.outcome == 'failure'
+        run: echo "✅ Invalid domain test correctly failed as expected"
+
+      - name: Fail if invalid domain test unexpectedly succeeded
+        if: steps.invalid-domain-test.outcome == 'success'
+        run: |
+          echo "❌ Invalid domain test should have failed but succeeded"
+          exit 1
 
       - name: Test domain association (valid)
         uses: ./upload-file
@@ -60,5 +71,5 @@ jobs:
             scanner=trivy
             image_name=test-image
             product_domain=security-agent-test
-          # TODO: remove before merging
+          # TODO: remove before merge
           security_agent_api_endpoint: https://security-agent-dad2e8a5e7.ddn.pro.hasura.io/graphql
