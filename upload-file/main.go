@@ -52,9 +52,9 @@ func main() {
 			pd, _ := metadata.ProductDomains(context.Background(), c)
 			var pds strings.Builder
 			for _, p := range pd {
-				pds.WriteString("- " + p + "\n")
+				pds.WriteString("  - " + p + "\n")
 			}
-			log.Fatalf("Failed to associate product domain with scan: %v. Please check `product_domain` value is one of the following:\n %s", err, pds.String())
+			log.Fatalf("Failed to associate product domain with scan: %v. Please check `product_domain` value is one of the following:\n%s", err, pds.String())
 		}
 		log.Printf("Associated product domain %s with scan %s\n", domain, scan.ID)
 	}
