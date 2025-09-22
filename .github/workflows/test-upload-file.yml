@@ -76,5 +76,3 @@ jobs:
           security_agent_api_key: ${{ secrets.SECURITY_AGENT_API_KEY }}
           tags: |
             service=test-service
-          # TODO: remove before merging
-          security_agent_api_endpoint: https://security-agent-7fed6b45f2.ddn.pro.hasura.io/graphql
