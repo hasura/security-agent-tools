@@ -59,6 +59,15 @@ func main() {
 		log.Printf("Associated product domain: %s\n", domain)
 	}
 
+	serviceName := input.Tags["service"]
+	if serviceName != "" {
+		err = metadata.AssociateServiceNameWithScan(context.Background(), c, scan.ID, serviceName)
+		if err != nil {
+			log.Fatalf("Failed to associate service name with scan: %v", err)
+		}
+		log.Printf("Associated service name: %s\n", serviceName)
+	}
+
 	err = upload.ServiceMetadata(context.Background(), c, input)
 	if err != nil {
 		log.Fatalf("Failed to upload metadata: %v", err)
