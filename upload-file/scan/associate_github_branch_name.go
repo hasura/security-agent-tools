@@ -3,7 +3,6 @@ package scan
 import (
 	"context"
 	"errors"
-	"fmt"
 	"os"
 	"strings"
 
@@ -51,8 +50,6 @@ func branchName() string {
 		githubRef       = os.Getenv("GITHUB_REF")
 		branchRefPrefix = "refs/heads/"
 	)
-	// TODO: Remove this before merge
-	fmt.Println("buildkitBranch: ", buildkitBranch, "githubRef: ", githubRef)
 	switch {
 	case buildkitBranch != "":
 		return buildkitBranch
