@@ -3,6 +3,7 @@ package scan
 import (
 	"context"
 	"errors"
+	"fmt"
 	"os"
 	"strings"
 
@@ -46,14 +47,17 @@ func (s *Scan) AssociateGithubBranchName(ctx context.Context) (string, error) {
 
 func branchName() string {
 	var (
-		buildkitBranch = os.Getenv("BUILDKITE_BRANCH")
-		githubRef      = os.Getenv("GITHUB_REF")
+		buildkitBranch  = os.Getenv("BUILDKITE_BRANCH")
+		githubRef       = os.Getenv("GITHUB_REF")
+		branchRefPrefix = "refs/heads/"
 	)
+	// TODO: Remove this before merge
+	fmt.Println("buildkitBranch: ", buildkitBranch, "githubRef: ", githubRef)
 	switch {
 	case buildkitBranch != "":
 		return buildkitBranch
-	case strings.HasPrefix(githubRef, "refs/heads/"):
-		return strings.TrimPrefix(githubRef, "refs/heads/")
+	case strings.HasPrefix(githubRef, branchRefPrefix):
+		return strings.TrimPrefix(githubRef, branchRefPrefix)
 	default:
 		return ""
 	}
