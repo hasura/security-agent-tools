@@ -8,7 +8,6 @@ import (
 	"github.com/hasura/security-agent-tools/upload-file/input"
 	"github.com/hasura/security-agent-tools/upload-file/saclient"
 	"github.com/hasura/security-agent-tools/upload-file/scan"
-	"github.com/hasura/security-agent-tools/upload-file/upload"
 )
 
 func main() {
@@ -20,7 +19,7 @@ func main() {
 
 	secAgentClient := saclient.NewClient(input.SecurityAgentAPIEndpoint, input.SecurityAgentAPIToken)
 
-	err = upload.UploadFile(context.Background(), secAgentClient, input.FilePath, input.Destination)
+	err = secAgentClient.UploadFile(context.Background(), input.FilePath, input.Destination)
 	if err != nil {
 		log.Fatalf("Upload failed: %v", err)
 	}

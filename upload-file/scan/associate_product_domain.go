@@ -33,7 +33,7 @@ func (s *Scan) AssociateProductDomain(ctx context.Context) (string, error) {
 		} `json:"insert_vulnerability_reports_by_product_domains"`
 	}
 
-	return productDomain, s.client.Do(ctx, req, &response)
+	return productDomain, s.client.ExecuteGQL(ctx, req, &response)
 }
 
 func ProductDomains(ctx context.Context, c *saclient.Client) ([]string, error) {
@@ -49,7 +49,7 @@ func ProductDomains(ctx context.Context, c *saclient.Client) ([]string, error) {
 		} `json:"vulnerability_reports_product_domains"`
 	}
 
-	err := c.Do(ctx, req, &response)
+	err := c.ExecuteGQL(ctx, req, &response)
 	if err != nil {
 		return nil, err
 	}

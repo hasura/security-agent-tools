@@ -36,7 +36,7 @@ func New(ctx context.Context, c *saclient.Client, tags map[string]string) (*Scan
 		} `json:"insert_vulnerability_reports_scans"`
 	}
 
-	err := c.Do(ctx, req, &response)
+	err := c.ExecuteGQL(ctx, req, &response)
 	if err != nil {
 		return nil, err
 	}

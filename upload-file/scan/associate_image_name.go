@@ -34,5 +34,5 @@ func (s *Scan) AssociateImageName(ctx context.Context) (string, error) {
 		} `json:"insert_vulnerability_reports_by_image_name"`
 	}
 
-	return imageName, s.client.Do(ctx, req, &response)
+	return imageName, s.client.ExecuteGQL(ctx, req, &response)
 }

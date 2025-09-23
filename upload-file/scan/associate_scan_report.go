@@ -27,5 +27,5 @@ func (s *Scan) AssociateScanReport(ctx context.Context, reportPath string) error
 		} `json:"insert_vulnerability_reports_scan_reports"`
 	}
 
-	return s.client.Do(ctx, req, &response)
+	return s.client.ExecuteGQL(ctx, req, &response)
 }

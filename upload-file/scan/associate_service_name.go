@@ -32,5 +32,5 @@ func (s *Scan) AssociateServiceName(ctx context.Context) (string, error) {
 		} `json:"insert_vulnerability_reports_by_service_name"`
 	}
 
-	return serviceName, s.client.Do(ctx, req, &response)
+	return serviceName, s.client.ExecuteGQL(ctx, req, &response)
 }
