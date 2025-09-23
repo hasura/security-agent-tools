@@ -1,4 +1,4 @@
-package upload
+package saclient
 
 import "path/filepath"
 

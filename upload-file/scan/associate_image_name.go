@@ -1,13 +1,17 @@
-package metadata
+package scan
 
 import (
 	"context"
 
-	"github.com/hasura/security-agent-tools/upload-file/upload"
 	"github.com/machinebox/graphql"
 )
 
-func AssociateImageNameWithScan(ctx context.Context, c *upload.Client, scanID, imageName string) error {
+func (s *Scan) AssociateImageName(ctx context.Context) (string, error) {
+	imageName := s.Tags["image_name"]
+	if imageName == "" {
+		return "", nil
+	}
+
 	req := graphql.NewRequest(`mutation AssociateImageName($scan_id: uuid, $image_name: string!) {
   insert_vulnerability_reports_by_image_name(
     objects: {scan_id: $scan_id, image_name: $image_name}
@@ -18,7 +22,7 @@ func AssociateImageNameWithScan(ctx context.Context, c *upload.Client, scanID, i
     }
   }
 }`)
-	req.Var("scan_id", scanID)
+	req.Var("scan_id", s.ID)
 	req.Var("image_name", imageName)
 
 	var response struct {
@@ -30,5 +34,5 @@ func AssociateImageNameWithScan(ctx context.Context, c *upload.Client, scanID, i
 		} `json:"insert_vulnerability_reports_by_image_name"`
 	}
 
-	return c.Do(ctx, req, &response)
+	return imageName, s.client.ExecuteGQL(ctx, req, &response)
 }

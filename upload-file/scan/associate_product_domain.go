@@ -1,13 +1,18 @@
-package metadata
+package scan
 
 import (
 	"context"
 
-	"github.com/hasura/security-agent-tools/upload-file/upload"
+	"github.com/hasura/security-agent-tools/upload-file/saclient"
 	"github.com/machinebox/graphql"
 )
 
-func AssociateProductDomainWithScan(ctx context.Context, c *upload.Client, scanID, productDomain string) error {
+func (s *Scan) AssociateProductDomain(ctx context.Context) (string, error) {
+	productDomain := s.Tags["product_domain"]
+	if productDomain == "" {
+		return "", nil
+	}
+
 	req := graphql.NewRequest(`mutation AssociateProductDomain($scan_id: uuid!, $product_domain: string!) {
   insert_vulnerability_reports_by_product_domains(
     objects: {scan_id: $scan_id, product_domain: $product_domain}
@@ -17,7 +22,7 @@ func AssociateProductDomainWithScan(ctx context.Context, c *upload.Client, scanI
     }
   }
 }`)
-	req.Var("scan_id", scanID)
+	req.Var("scan_id", s.ID)
 	req.Var("product_domain", productDomain)
 
 	var response struct {
@@ -28,10 +33,10 @@ func AssociateProductDomainWithScan(ctx context.Context, c *upload.Client, scanI
 		} `json:"insert_vulnerability_reports_by_product_domains"`
 	}
 
-	return c.Do(ctx, req, &response)
+	return productDomain, s.client.ExecuteGQL(ctx, req, &response)
 }
 
-func ProductDomains(ctx context.Context, c *upload.Client) ([]string, error) {
+func ProductDomains(ctx context.Context, c *saclient.Client) ([]string, error) {
 	req := graphql.NewRequest(`query GetProductDomains {
   vulnerability_reports_product_domains {
     code
@@ -44,7 +49,7 @@ func ProductDomains(ctx context.Context, c *upload.Client) ([]string, error) {
 		} `json:"vulnerability_reports_product_domains"`
 	}
 
-	err := c.Do(ctx, req, &response)
+	err := c.ExecuteGQL(ctx, req, &response)
 	if err != nil {
 		return nil, err
 	}

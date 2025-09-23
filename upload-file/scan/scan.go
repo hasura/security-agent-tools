@@ -1,18 +1,20 @@
-package metadata
+package scan
 
 import (
 	"context"
 
-	"github.com/hasura/security-agent-tools/upload-file/upload"
+	"github.com/hasura/security-agent-tools/upload-file/saclient"
 	"github.com/machinebox/graphql"
 )
 
 type Scan struct {
 	ID   string            `json:"id"`
 	Tags map[string]string `json:"tags"`
+
+	client *saclient.Client
 }
 
-func CreateScan(ctx context.Context, c *upload.Client, tags map[string]string) (*Scan, error) {
+func New(ctx context.Context, c *saclient.Client, tags map[string]string) (*Scan, error) {
 	t := tags
 	if t == nil {
 		t = make(map[string]string)
@@ -34,10 +36,13 @@ func CreateScan(ctx context.Context, c *upload.Client, tags map[string]string) (
 		} `json:"insert_vulnerability_reports_scans"`
 	}
 
-	err := c.Do(ctx, req, &response)
+	err := c.ExecuteGQL(ctx, req, &response)
 	if err != nil {
 		return nil, err
 	}
 
-	return &response.InsertVulnerabilityReportsScans.Returning[0], nil
+	sc := &response.InsertVulnerabilityReportsScans.Returning[0]
+	sc.client = c
+
+	return sc, nil
 }

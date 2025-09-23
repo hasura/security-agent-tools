@@ -1,14 +1,13 @@
-package metadata
+package scan
 
 import (
 	"context"
 
-	"github.com/hasura/security-agent-tools/upload-file/upload"
 	"github.com/machinebox/graphql"
 )
 
-func InsertScanReport(ctx context.Context, c *upload.Client, scanID, reportPath string) error {
-	req := graphql.NewRequest(`mutation InsertScanReport($scan_id: uuid, $report_uri: string!) {
+func (s *Scan) AssociateScanReport(ctx context.Context, reportPath string) error {
+	req := graphql.NewRequest(`mutation AssociateScanReport($scan_id: uuid, $report_uri: string!) {
   insert_vulnerability_reports_scan_reports(
     objects: {scan_id: $scan_id, report_uri: $report_uri}
   ) {
@@ -17,7 +16,7 @@ func InsertScanReport(ctx context.Context, c *upload.Client, scanID, reportPath 
     }
   }
 }`)
-	req.Var("scan_id", scanID)
+	req.Var("scan_id", s.ID)
 	req.Var("report_uri", reportPath)
 
 	var response struct {
@@ -28,5 +27,5 @@ func InsertScanReport(ctx context.Context, c *upload.Client, scanID, reportPath 
 		} `json:"insert_vulnerability_reports_scan_reports"`
 	}
 
-	return c.Do(ctx, req, &response)
+	return s.client.ExecuteGQL(ctx, req, &response)
 }

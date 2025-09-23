@@ -6,8 +6,8 @@ import (
 	"strings"
 
 	"github.com/hasura/security-agent-tools/upload-file/input"
-	"github.com/hasura/security-agent-tools/upload-file/metadata"
-	"github.com/hasura/security-agent-tools/upload-file/upload"
+	"github.com/hasura/security-agent-tools/upload-file/saclient"
+	"github.com/hasura/security-agent-tools/upload-file/scan"
 )
 
 func main() {
@@ -17,59 +17,51 @@ func main() {
 		return
 	}
 
-	c := upload.NewClient(input.SecurityAgentAPIEndpoint, input.SecurityAgentAPIToken)
+	secAgentClient := saclient.NewClient(input.SecurityAgentAPIEndpoint, input.SecurityAgentAPIToken)
 
-	err = c.UploadFile(context.Background(), input.FilePath, input.Destination)
+	err = secAgentClient.UploadFile(context.Background(), input.FilePath, input.Destination)
 	if err != nil {
 		log.Fatalf("Upload failed: %v", err)
 	}
 	log.Printf("Upload successful: %s -> %s\n", input.FilePath, input.Destination)
 
-	scan, err := metadata.CreateScan(context.Background(), c, input.Tags)
+	sc, err := scan.New(context.Background(), secAgentClient, input.Tags)
 	if err != nil {
 		log.Fatalf("Failed to create scan: %v", err)
 	}
-	log.Printf("Scan created with ID: %s\n", scan.ID)
+	log.Printf("Scan created with ID: %s\n", sc.ID)
 
-	err = metadata.InsertScanReport(context.Background(), c, scan.ID, input.Destination)
+	err = sc.AssociateScanReport(context.Background(), input.Destination)
 	if err != nil {
 		log.Fatalf("Failed to store scan report path in metadata: %v", err)
 	}
 
-	imageName := input.Tags["image_name"]
-	if imageName != "" {
-		err = metadata.AssociateImageNameWithScan(context.Background(), c, scan.ID, imageName)
-		if err != nil {
-			log.Fatalf("Failed to associate image name with scan: %v", err)
-		}
+	imageName, err := sc.AssociateImageName(context.Background())
+	switch {
+	case err != nil:
+		log.Fatalf("Failed to associate image name with scan: %v", err)
+	case imageName != "":
 		log.Printf("Associated image name: %s\n", imageName)
 	}
 
-	domain := input.Tags["product_domain"]
-	if domain != "" {
-		err = metadata.AssociateProductDomainWithScan(context.Background(), c, scan.ID, domain)
-		if err != nil {
-			pd, _ := metadata.ProductDomains(context.Background(), c)
-			var pds strings.Builder
-			for _, p := range pd {
-				pds.WriteString("  - " + p + "\n")
-			}
-			log.Fatalf("Failed to associate product domain with scan: %v. Please check `product_domain` value is one of the following:\n%s", err, pds.String())
+	domain, err := sc.AssociateProductDomain(context.Background())
+	switch {
+	case err != nil:
+		pd, _ := scan.ProductDomains(context.Background(), secAgentClient)
+		var pds strings.Builder
+		for _, p := range pd {
+			pds.WriteString("  - " + p + "\n")
 		}
+		log.Fatalf("Failed to associate product domain with scan: %v. Please check `product_domain` value is one of the following:\n%s", err, pds.String())
+	case domain != "":
 		log.Printf("Associated product domain: %s\n", domain)
 	}
 
-	serviceName := input.Tags["service"]
-	if serviceName != "" {
-		err = metadata.AssociateServiceNameWithScan(context.Background(), c, scan.ID, serviceName)
-		if err != nil {
-			log.Fatalf("Failed to associate service name with scan: %v", err)
-		}
+	serviceName, err := sc.AssociateServiceName(context.Background())
+	switch {
+	case err != nil:
+		log.Fatalf("Failed to associate service name with scan: %v", err)
+	case serviceName != "":
 		log.Printf("Associated service name: %s\n", serviceName)
-	}
-
-	err = upload.ServiceMetadata(context.Background(), c, input)
-	if err != nil {
-		log.Fatalf("Failed to upload metadata: %v", err)
 	}
 }

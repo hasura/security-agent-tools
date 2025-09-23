@@ -1,4 +1,4 @@
-package upload
+package saclient
 
 import (
 	"bytes"
@@ -14,12 +14,13 @@ import (
 	"github.com/machinebox/graphql"
 )
 
+// Client is a client for interacting with the Security Agent API.
 type Client struct {
 	securityAgentAPIEndpoint string
 	securityAgentAPIKey      string
 
-	gqlClient  *graphql.Client
-	httpClient *http.Client
+	gqlClient    *graphql.Client
+	UploadClient *http.Client
 }
 
 func NewClient(securityAgentAPIEndpoint, securityAgentAPIKey string) *Client {
@@ -27,49 +28,18 @@ func NewClient(securityAgentAPIEndpoint, securityAgentAPIKey string) *Client {
 		securityAgentAPIEndpoint: securityAgentAPIEndpoint,
 		securityAgentAPIKey:      securityAgentAPIKey,
 		gqlClient:                graphql.NewClient(securityAgentAPIEndpoint),
-		httpClient: &http.Client{
+		UploadClient: &http.Client{
 			Timeout: 5 * time.Minute, // Allow up to 5 minutes for upload
 		},
 	}
 }
 
-func (c *Client) Do(ctx context.Context, req *graphql.Request, response interface{}) error {
+// ExecuteGQL executes a GraphQL query or mutation.
+func (c *Client) ExecuteGQL(ctx context.Context, req *graphql.Request, response interface{}) error {
 	req.Header.Set("Authorization", c.securityAgentAPIKey)
 	req.Header.Set("X-Hasura-Auth-Mode", "ci-auth")
 
 	return c.gqlClient.Run(ctx, req, &response)
-}
-
-type PresignedUploadResponse struct {
-	StoragePresignedUploadURL struct {
-		URL       string    `json:"url"`
-		ExpiredAt time.Time `json:"expired_at"`
-	} `json:"storage_presigned_upload_url"`
-}
-
-func (c *Client) presignedUploadURL(ctx context.Context, destination string) (string, error) {
-	req := graphql.NewRequest(`
-		query UploadFile($name: String!) {
-			storage_presigned_upload_url(name: $name) {
-				url
-				expired_at
-			}
-		}
-	`)
-	req.Var("name", destination)
-	req.Header.Set("Authorization", c.securityAgentAPIKey)
-	req.Header.Set("X-Hasura-Auth-Mode", "ci-auth")
-
-	var response PresignedUploadResponse
-	err := c.gqlClient.Run(ctx, req, &response)
-	if err != nil {
-		return "", fmt.Errorf("failed to get presigned upload URL: %w", err)
-	}
-
-	// TODO: send back expired_at and use that as a timeout for upload
-	log.Printf("Presigned URL expires at: %s", response.StoragePresignedUploadURL.ExpiredAt)
-
-	return response.StoragePresignedUploadURL.URL, nil
 }
 
 // UploadFile uploads the file to S3 (or other storage bucket configured in security agent)
@@ -117,6 +87,34 @@ func (c *Client) UploadFile(ctx context.Context, sourcePath, destination string)
 	)
 }
 
+func (c *Client) presignedUploadURL(ctx context.Context, destination string) (string, error) {
+	req := graphql.NewRequest(`
+		query UploadFile($name: String!) {
+			storage_presigned_upload_url(name: $name) {
+				url
+				expired_at
+			}
+		}
+	`)
+	req.Var("name", destination)
+
+	var response struct {
+		StoragePresignedUploadURL struct {
+			URL       string    `json:"url"`
+			ExpiredAt time.Time `json:"expired_at"`
+		} `json:"storage_presigned_upload_url"`
+	}
+	err := c.ExecuteGQL(ctx, req, &response)
+	if err != nil {
+		return "", fmt.Errorf("failed to get presigned upload URL: %w", err)
+	}
+
+	// TODO: send back expired_at and use that as a timeout for upload
+	log.Printf("Presigned URL expires at: %s", response.StoragePresignedUploadURL.ExpiredAt)
+
+	return response.StoragePresignedUploadURL.URL, nil
+}
+
 func (c *Client) rawUpload(ctx context.Context, uploadURL string, contentType ContentType, contentSize int64, r io.Reader) error {
 	req, err := http.NewRequestWithContext(ctx, "PUT", uploadURL, r)
 	if err != nil {
@@ -125,7 +123,7 @@ func (c *Client) rawUpload(ctx context.Context, uploadURL string, contentType Co
 	req.ContentLength = contentSize
 	req.Header.Set("Content-Type", string(contentType))
 
-	resp, err := c.httpClient.Do(req)
+	resp, err := c.UploadClient.Do(req)
 	if err != nil {
 		return fmt.Errorf("failed to upload file: %v", err)
 	}
@@ -137,25 +135,4 @@ func (c *Client) rawUpload(ctx context.Context, uploadURL string, contentType Co
 	}
 
 	return nil
-}
-
-func (c *Client) UploadViaReader(ctx context.Context, r io.Reader, contentType ContentType, destination string) error {
-	log.Println("Uploading to: ", destination)
-	// Buffer the content to determine size
-	var buf bytes.Buffer
-	size, err := io.Copy(&buf, r)
-	if err != nil {
-		return fmt.Errorf("failed to read content: %v", err)
-	}
-
-	presignedURL, err := c.presignedUploadURL(ctx, destination)
-	if err != nil {
-		return fmt.Errorf("failed to get presigned upload URL: %w", err)
-	}
-
-	return c.rawUpload(ctx,
-		presignedURL,
-		contentType, size,
-		&buf,
-	)
 }
