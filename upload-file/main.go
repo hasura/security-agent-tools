@@ -64,4 +64,12 @@ func main() {
 	case serviceName != "":
 		log.Printf("Associated service name: %s\n", serviceName)
 	}
+
+	githubBranchName, err := sc.AssociateGithubBranchName(context.Background())
+	switch {
+	case err != nil:
+		log.Fatalf("Failed to associate GitHub branch name with scan: %v", err)
+	case githubBranchName != "":
+		log.Printf("Associated GitHub branch name: %s\n", githubBranchName)
+	}
 }
