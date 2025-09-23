@@ -3,7 +3,7 @@ package metadata
 import (
 	"context"
 
-	"github.com/hasura/security-agent-tools/upload-file/upload"
+	"github.com/hasura/security-agent-tools/upload-file/saclient"
 	"github.com/machinebox/graphql"
 )
 
@@ -12,7 +12,7 @@ type Scan struct {
 	Tags map[string]string `json:"tags"`
 }
 
-func CreateScan(ctx context.Context, c *upload.Client, tags map[string]string) (*Scan, error) {
+func CreateScan(ctx context.Context, c *saclient.Client, tags map[string]string) (*Scan, error) {
 	t := tags
 	if t == nil {
 		t = make(map[string]string)

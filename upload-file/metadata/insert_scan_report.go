@@ -3,11 +3,11 @@ package metadata
 import (
 	"context"
 
-	"github.com/hasura/security-agent-tools/upload-file/upload"
+	"github.com/hasura/security-agent-tools/upload-file/saclient"
 	"github.com/machinebox/graphql"
 )
 
-func InsertScanReport(ctx context.Context, c *upload.Client, scanID, reportPath string) error {
+func InsertScanReport(ctx context.Context, c *saclient.Client, scanID, reportPath string) error {
 	req := graphql.NewRequest(`mutation InsertScanReport($scan_id: uuid, $report_uri: string!) {
   insert_vulnerability_reports_scan_reports(
     objects: {scan_id: $scan_id, report_uri: $report_uri}

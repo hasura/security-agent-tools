@@ -3,11 +3,12 @@ package metadata
 import (
 	"context"
 
+	"github.com/hasura/security-agent-tools/upload-file/saclient"
 	"github.com/hasura/security-agent-tools/upload-file/upload"
 	"github.com/machinebox/graphql"
 )
 
-func AssociateProductDomainWithScan(ctx context.Context, c *upload.Client, scanID, productDomain string) error {
+func AssociateProductDomainWithScan(ctx context.Context, c *saclient.Client, scanID, productDomain string) error {
 	req := graphql.NewRequest(`mutation AssociateProductDomain($scan_id: uuid!, $product_domain: string!) {
   insert_vulnerability_reports_by_product_domains(
     objects: {scan_id: $scan_id, product_domain: $product_domain}

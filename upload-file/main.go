@@ -7,6 +7,7 @@ import (
 
 	"github.com/hasura/security-agent-tools/upload-file/input"
 	"github.com/hasura/security-agent-tools/upload-file/metadata"
+	"github.com/hasura/security-agent-tools/upload-file/saclient"
 	"github.com/hasura/security-agent-tools/upload-file/upload"
 )
 
@@ -18,6 +19,7 @@ func main() {
 	}
 
 	c := upload.NewClient(input.SecurityAgentAPIEndpoint, input.SecurityAgentAPIToken)
+	secAgentClient := saclient.NewClient(input.SecurityAgentAPIEndpoint, input.SecurityAgentAPIToken)
 
 	err = c.UploadFile(context.Background(), input.FilePath, input.Destination)
 	if err != nil {
@@ -25,20 +27,20 @@ func main() {
 	}
 	log.Printf("Upload successful: %s -> %s\n", input.FilePath, input.Destination)
 
-	scan, err := metadata.CreateScan(context.Background(), c, input.Tags)
+	scan, err := metadata.CreateScan(context.Background(), secAgentClient, input.Tags)
 	if err != nil {
 		log.Fatalf("Failed to create scan: %v", err)
 	}
 	log.Printf("Scan created with ID: %s\n", scan.ID)
 
-	err = metadata.InsertScanReport(context.Background(), c, scan.ID, input.Destination)
+	err = metadata.InsertScanReport(context.Background(), secAgentClient, scan.ID, input.Destination)
 	if err != nil {
 		log.Fatalf("Failed to store scan report path in metadata: %v", err)
 	}
 
 	imageName := input.Tags["image_name"]
 	if imageName != "" {
-		err = metadata.AssociateImageNameWithScan(context.Background(), c, scan.ID, imageName)
+		err = metadata.AssociateImageNameWithScan(context.Background(), secAgentClient, scan.ID, imageName)
 		if err != nil {
 			log.Fatalf("Failed to associate image name with scan: %v", err)
 		}
@@ -47,7 +49,7 @@ func main() {
 
 	domain := input.Tags["product_domain"]
 	if domain != "" {
-		err = metadata.AssociateProductDomainWithScan(context.Background(), c, scan.ID, domain)
+		err = metadata.AssociateProductDomainWithScan(context.Background(), secAgentClient, scan.ID, domain)
 		if err != nil {
 			pd, _ := metadata.ProductDomains(context.Background(), c)
 			var pds strings.Builder
@@ -61,7 +63,7 @@ func main() {
 
 	serviceName := input.Tags["service"]
 	if serviceName != "" {
-		err = metadata.AssociateServiceNameWithScan(context.Background(), c, scan.ID, serviceName)
+		err = metadata.AssociateServiceNameWithScan(context.Background(), secAgentClient, scan.ID, serviceName)
 		if err != nil {
 			log.Fatalf("Failed to associate service name with scan: %v", err)
 		}

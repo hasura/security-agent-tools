@@ -3,11 +3,11 @@ package metadata
 import (
 	"context"
 
-	"github.com/hasura/security-agent-tools/upload-file/upload"
+	"github.com/hasura/security-agent-tools/upload-file/saclient"
 	"github.com/machinebox/graphql"
 )
 
-func AssociateServiceNameWithScan(ctx context.Context, c *upload.Client, scanID, serviceName string) error {
+func AssociateServiceNameWithScan(ctx context.Context, c *saclient.Client, scanID, serviceName string) error {
 	req := graphql.NewRequest(`mutation AssociateServiceName($scan_id: uuid!, $service_name: string!) {
   insert_vulnerability_reports_by_service_name(
     objects: {scan_id: $scan_id, service_name: $service_name}
