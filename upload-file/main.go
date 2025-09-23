@@ -5,6 +5,7 @@ import (
 	"log"
 	"strings"
 
+	"github.com/hasura/security-agent-tools/upload-file/catalog"
 	"github.com/hasura/security-agent-tools/upload-file/input"
 	"github.com/hasura/security-agent-tools/upload-file/saclient"
 	"github.com/hasura/security-agent-tools/upload-file/scan"
@@ -47,7 +48,7 @@ func main() {
 	domain, err := sc.AssociateProductDomain(context.Background())
 	switch {
 	case err != nil:
-		pd, _ := scan.ProductDomains(context.Background(), secAgentClient)
+		pd, _ := catalog.ProductDomains(context.Background(), secAgentClient)
 		var pds strings.Builder
 		for _, p := range pd {
 			pds.WriteString("  - " + p + "\n")
@@ -63,5 +64,13 @@ func main() {
 		log.Fatalf("Failed to associate service name with scan: %v", err)
 	case serviceName != "":
 		log.Printf("Associated service name: %s\n", serviceName)
+	}
+
+	githubBranchName, err := sc.AssociateGithubBranchName(context.Background())
+	switch {
+	case err != nil:
+		log.Fatalf("Failed to associate GitHub branch name with scan: %v", err)
+	case githubBranchName != "":
+		log.Printf("Associated GitHub branch name: %s\n", githubBranchName)
 	}
 }

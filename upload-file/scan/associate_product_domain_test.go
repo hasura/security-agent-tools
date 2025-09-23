@@ -6,6 +6,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"github.com/hasura/security-agent-tools/upload-file/catalog"
 	"github.com/hasura/security-agent-tools/upload-file/saclient"
 )
 
@@ -116,7 +117,7 @@ func TestProductDomains_Success(t *testing.T) {
 	defer server.Close()
 
 	client := saclient.NewClient(server.URL, "test-api-key")
-	domains, err := ProductDomains(context.Background(), client)
+	domains, err := catalog.ProductDomains(context.Background(), client)
 
 	if err != nil {
 		t.Errorf("ProductDomains failed: %v", err)
@@ -147,7 +148,7 @@ func TestProductDomains_EmptyResponse(t *testing.T) {
 	defer server.Close()
 
 	client := saclient.NewClient(server.URL, "test-api-key")
-	domains, err := ProductDomains(context.Background(), client)
+	domains, err := catalog.ProductDomains(context.Background(), client)
 
 	if err != nil {
 		t.Errorf("ProductDomains failed: %v", err)
@@ -168,7 +169,7 @@ func TestProductDomains_GraphQLError(t *testing.T) {
 	defer server.Close()
 
 	client := saclient.NewClient(server.URL, "test-api-key")
-	domains, err := ProductDomains(context.Background(), client)
+	domains, err := catalog.ProductDomains(context.Background(), client)
 
 	if err == nil {
 		t.Error("Expected error for GraphQL error response")
