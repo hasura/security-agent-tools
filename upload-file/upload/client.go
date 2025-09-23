@@ -11,43 +11,11 @@ import (
 	"path/filepath"
 	"time"
 
+	"github.com/hasura/security-agent-tools/upload-file/saclient"
 	"github.com/machinebox/graphql"
 )
 
-type Client struct {
-	securityAgentAPIEndpoint string
-	securityAgentAPIKey      string
-
-	gqlClient  *graphql.Client
-	httpClient *http.Client
-}
-
-func NewClient(securityAgentAPIEndpoint, securityAgentAPIKey string) *Client {
-	return &Client{
-		securityAgentAPIEndpoint: securityAgentAPIEndpoint,
-		securityAgentAPIKey:      securityAgentAPIKey,
-		gqlClient:                graphql.NewClient(securityAgentAPIEndpoint),
-		httpClient: &http.Client{
-			Timeout: 5 * time.Minute, // Allow up to 5 minutes for upload
-		},
-	}
-}
-
-func (c *Client) Do(ctx context.Context, req *graphql.Request, response interface{}) error {
-	req.Header.Set("Authorization", c.securityAgentAPIKey)
-	req.Header.Set("X-Hasura-Auth-Mode", "ci-auth")
-
-	return c.gqlClient.Run(ctx, req, &response)
-}
-
-type PresignedUploadResponse struct {
-	StoragePresignedUploadURL struct {
-		URL       string    `json:"url"`
-		ExpiredAt time.Time `json:"expired_at"`
-	} `json:"storage_presigned_upload_url"`
-}
-
-func (c *Client) presignedUploadURL(ctx context.Context, destination string) (string, error) {
+func presignedUploadURL(ctx context.Context, c *saclient.Client, destination string) (string, error) {
 	req := graphql.NewRequest(`
 		query UploadFile($name: String!) {
 			storage_presigned_upload_url(name: $name) {
@@ -57,11 +25,14 @@ func (c *Client) presignedUploadURL(ctx context.Context, destination string) (st
 		}
 	`)
 	req.Var("name", destination)
-	req.Header.Set("Authorization", c.securityAgentAPIKey)
-	req.Header.Set("X-Hasura-Auth-Mode", "ci-auth")
 
-	var response PresignedUploadResponse
-	err := c.gqlClient.Run(ctx, req, &response)
+	var response struct {
+		StoragePresignedUploadURL struct {
+			URL       string    `json:"url"`
+			ExpiredAt time.Time `json:"expired_at"`
+		} `json:"storage_presigned_upload_url"`
+	}
+	err := c.Do(ctx, req, &response)
 	if err != nil {
 		return "", fmt.Errorf("failed to get presigned upload URL: %w", err)
 	}
@@ -77,7 +48,7 @@ func (c *Client) presignedUploadURL(ctx context.Context, destination string) (st
 //
 // sourcePath is the path to the file to upload.
 // destination is the destination path in the storage bucket.
-func (c *Client) UploadFile(ctx context.Context, sourcePath, destination string) error {
+func UploadFile(ctx context.Context, c *saclient.Client, sourcePath, destination string) error {
 	log.Printf("Uploading file: %s", sourcePath)
 
 	fileInfo, err := os.Stat(sourcePath)
@@ -91,7 +62,7 @@ func (c *Client) UploadFile(ctx context.Context, sourcePath, destination string)
 	log.Printf("File size: %d bytes", fileInfo.Size())
 	log.Printf("Destination: %s", destination)
 
-	presignedURL, err := c.presignedUploadURL(ctx, destination)
+	presignedURL, err := presignedUploadURL(ctx, c, destination)
 	if err != nil {
 		return fmt.Errorf("failed to get presigned upload URL: %w", err)
 	}
@@ -110,14 +81,14 @@ func (c *Client) UploadFile(ctx context.Context, sourcePath, destination string)
 		return fmt.Errorf("failed to read file: %v", err)
 	}
 
-	return c.rawUpload(ctx,
+	return rawUpload(ctx, c,
 		presignedURL,
 		getContentType(sourcePath), fileInfo.Size(),
 		&buf,
 	)
 }
 
-func (c *Client) rawUpload(ctx context.Context, uploadURL string, contentType ContentType, contentSize int64, r io.Reader) error {
+func rawUpload(ctx context.Context, c *saclient.Client, uploadURL string, contentType ContentType, contentSize int64, r io.Reader) error {
 	req, err := http.NewRequestWithContext(ctx, "PUT", uploadURL, r)
 	if err != nil {
 		return fmt.Errorf("failed to create HTTP request: %v", err)
@@ -125,7 +96,7 @@ func (c *Client) rawUpload(ctx context.Context, uploadURL string, contentType Co
 	req.ContentLength = contentSize
 	req.Header.Set("Content-Type", string(contentType))
 
-	resp, err := c.httpClient.Do(req)
+	resp, err := c.HttpClient.Do(req)
 	if err != nil {
 		return fmt.Errorf("failed to upload file: %v", err)
 	}
@@ -137,25 +108,4 @@ func (c *Client) rawUpload(ctx context.Context, uploadURL string, contentType Co
 	}
 
 	return nil
-}
-
-func (c *Client) UploadViaReader(ctx context.Context, r io.Reader, contentType ContentType, destination string) error {
-	log.Println("Uploading to: ", destination)
-	// Buffer the content to determine size
-	var buf bytes.Buffer
-	size, err := io.Copy(&buf, r)
-	if err != nil {
-		return fmt.Errorf("failed to read content: %v", err)
-	}
-
-	presignedURL, err := c.presignedUploadURL(ctx, destination)
-	if err != nil {
-		return fmt.Errorf("failed to get presigned upload URL: %w", err)
-	}
-
-	return c.rawUpload(ctx,
-		presignedURL,
-		contentType, size,
-		&buf,
-	)
 }

@@ -4,7 +4,6 @@ import (
 	"context"
 
 	"github.com/hasura/security-agent-tools/upload-file/saclient"
-	"github.com/hasura/security-agent-tools/upload-file/upload"
 	"github.com/machinebox/graphql"
 )
 
@@ -32,7 +31,7 @@ func AssociateProductDomainWithScan(ctx context.Context, c *saclient.Client, sca
 	return c.Do(ctx, req, &response)
 }
 
-func ProductDomains(ctx context.Context, c *upload.Client) ([]string, error) {
+func ProductDomains(ctx context.Context, c *saclient.Client) ([]string, error) {
 	req := graphql.NewRequest(`query GetProductDomains {
   vulnerability_reports_product_domains {
     code

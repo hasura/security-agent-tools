@@ -18,10 +18,9 @@ func main() {
 		return
 	}
 
-	c := upload.NewClient(input.SecurityAgentAPIEndpoint, input.SecurityAgentAPIToken)
 	secAgentClient := saclient.NewClient(input.SecurityAgentAPIEndpoint, input.SecurityAgentAPIToken)
 
-	err = c.UploadFile(context.Background(), input.FilePath, input.Destination)
+	err = upload.UploadFile(context.Background(), secAgentClient, input.FilePath, input.Destination)
 	if err != nil {
 		log.Fatalf("Upload failed: %v", err)
 	}
@@ -51,7 +50,7 @@ func main() {
 	if domain != "" {
 		err = metadata.AssociateProductDomainWithScan(context.Background(), secAgentClient, scan.ID, domain)
 		if err != nil {
-			pd, _ := metadata.ProductDomains(context.Background(), c)
+			pd, _ := metadata.ProductDomains(context.Background(), secAgentClient)
 			var pds strings.Builder
 			for _, p := range pd {
 				pds.WriteString("  - " + p + "\n")
@@ -68,10 +67,5 @@ func main() {
 			log.Fatalf("Failed to associate service name with scan: %v", err)
 		}
 		log.Printf("Associated service name: %s\n", serviceName)
-	}
-
-	err = upload.ServiceMetadata(context.Background(), c, input)
-	if err != nil {
-		log.Fatalf("Failed to upload metadata: %v", err)
 	}
 }

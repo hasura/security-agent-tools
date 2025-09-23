@@ -14,7 +14,7 @@ type Client struct {
 	securityAgentAPIKey      string
 
 	gqlClient  *graphql.Client
-	httpClient *http.Client
+	HttpClient *http.Client
 }
 
 func NewClient(securityAgentAPIEndpoint, securityAgentAPIKey string) *Client {
@@ -22,7 +22,7 @@ func NewClient(securityAgentAPIEndpoint, securityAgentAPIKey string) *Client {
 		securityAgentAPIEndpoint: securityAgentAPIEndpoint,
 		securityAgentAPIKey:      securityAgentAPIKey,
 		gqlClient:                graphql.NewClient(securityAgentAPIEndpoint),
-		httpClient: &http.Client{
+		HttpClient: &http.Client{
 			Timeout: 5 * time.Minute, // Allow up to 5 minutes for upload
 		},
 	}
