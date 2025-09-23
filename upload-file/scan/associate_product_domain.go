@@ -1,4 +1,4 @@
-package metadata
+package scan
 
 import (
 	"context"
@@ -7,7 +7,12 @@ import (
 	"github.com/machinebox/graphql"
 )
 
-func AssociateProductDomainWithScan(ctx context.Context, c *saclient.Client, scanID, productDomain string) error {
+func (s *Scan) AssociateProductDomain(ctx context.Context) (string, error) {
+	productDomain := s.Tags["product_domain"]
+	if productDomain == "" {
+		return "", nil
+	}
+
 	req := graphql.NewRequest(`mutation AssociateProductDomain($scan_id: uuid!, $product_domain: string!) {
   insert_vulnerability_reports_by_product_domains(
     objects: {scan_id: $scan_id, product_domain: $product_domain}
@@ -17,7 +22,7 @@ func AssociateProductDomainWithScan(ctx context.Context, c *saclient.Client, sca
     }
   }
 }`)
-	req.Var("scan_id", scanID)
+	req.Var("scan_id", s.ID)
 	req.Var("product_domain", productDomain)
 
 	var response struct {
@@ -28,7 +33,7 @@ func AssociateProductDomainWithScan(ctx context.Context, c *saclient.Client, sca
 		} `json:"insert_vulnerability_reports_by_product_domains"`
 	}
 
-	return c.Do(ctx, req, &response)
+	return productDomain, s.client.Do(ctx, req, &response)
 }
 
 func ProductDomains(ctx context.Context, c *saclient.Client) ([]string, error) {
