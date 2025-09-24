@@ -2,7 +2,6 @@ package scan
 
 import (
 	"context"
-	"fmt"
 	"os"
 	"strconv"
 	"strings"
@@ -51,16 +50,18 @@ func pullRequestNumber() int {
 		githubRef   = os.Getenv("GITHUB_REF")
 		prRefPrefix = "refs/pull/"
 	)
-	fmt.Println("Buildkite PR: ", buildkitPR)
-	fmt.Println("Github ref: ", githubRef)
 	var prNum string
 	switch {
 	case buildkitPR != "":
 		prNum = buildkitPR
 	case strings.HasPrefix(githubRef, prRefPrefix):
-		prNum = strings.TrimPrefix(githubRef, prRefPrefix)
+		// Extract PR number from refs/pull/123/merge or refs/pull/123/head
+		refWithoutPrefix := strings.TrimPrefix(githubRef, prRefPrefix)
+		parts := strings.Split(refWithoutPrefix, "/")
+		if len(parts) > 0 {
+			prNum = parts[0]
+		}
 	}
-	fmt.Println("Pull request: ", prNum)
 	pr, _ := strconv.Atoi(prNum)
 	return pr
 }
