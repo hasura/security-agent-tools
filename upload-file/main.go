@@ -73,4 +73,12 @@ func main() {
 	case githubBranchName != "":
 		log.Printf("Associated GitHub branch name: %s\n", githubBranchName)
 	}
+
+	githubPRNumber, err := sc.AssociateGithubPullRequest(context.Background())
+	switch {
+	case err != nil:
+		log.Fatalf("Failed to associate GitHub pull request with scan: %v", err)
+	case githubPRNumber > 0:
+		log.Printf("Associated GitHub pull request: %d\n", githubPRNumber)
+	}
 }
