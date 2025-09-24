@@ -81,4 +81,12 @@ func main() {
 	case githubPRNumber > 0:
 		log.Printf("Associated GitHub pull request: %d\n", githubPRNumber)
 	}
+
+	productRelease, err := sc.AssociateProductRelease(context.Background())
+	switch {
+	case err != nil:
+		log.Fatalf("Failed to associate product release with scan: %v", err)
+	case productRelease != "":
+		log.Printf("Associated product release: %s\n", productRelease)
+	}
 }
