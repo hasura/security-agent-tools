@@ -2,6 +2,7 @@ package scan
 
 import (
 	"context"
+	"fmt"
 	"os"
 	"strconv"
 	"strings"
@@ -46,17 +47,20 @@ func (s *Scan) AssociateGithubPullRequest(ctx context.Context) (int, error) {
 
 func pullRequestNumber() int {
 	var (
-		buildkitBranch  = os.Getenv("BUILDKITE_PULL_REQUEST")
-		githubRef       = os.Getenv("GITHUB_REF")
-		branchRefPrefix = "refs/pull/"
+		buildkitPR  = os.Getenv("BUILDKITE_PULL_REQUEST")
+		githubRef   = os.Getenv("GITHUB_REF")
+		prRefPrefix = "refs/pull/"
 	)
+	fmt.Println("Buildkite PR: ", buildkitPR)
+	fmt.Println("Github ref: ", githubRef)
 	var prNum string
 	switch {
-	case buildkitBranch != "":
-		prNum = buildkitBranch
-	case strings.HasPrefix(githubRef, branchRefPrefix):
-		prNum = strings.TrimPrefix(githubRef, branchRefPrefix)
+	case buildkitPR != "":
+		prNum = buildkitPR
+	case strings.HasPrefix(githubRef, prRefPrefix):
+		prNum = strings.TrimPrefix(githubRef, prRefPrefix)
 	}
+	fmt.Println("Pull request: ", prNum)
 	pr, _ := strconv.Atoi(prNum)
 	return pr
 }
