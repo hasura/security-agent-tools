@@ -419,6 +419,88 @@ func TestScan_AssociateGithubBranchName_HTTPError(t *testing.T) {
 	}
 }
 
+func TestScan_AssociateGithubBranchName_EmptyGithubRepoID(t *testing.T) {
+	// Save original values
+	originalBuildkite := os.Getenv("BUILDKITE_BRANCH")
+	originalGithubRepo := os.Getenv("GITHUB_REPOSITORY")
+
+	// Set test environment - valid branch name but no GITHUB_REPOSITORY
+	os.Setenv("BUILDKITE_BRANCH", "feature/awesome-feature")
+	os.Unsetenv("GITHUB_REPOSITORY") // This will cause catalog.GithubRepoID to return empty string
+
+	// Restore original values
+	defer func() {
+		if originalBuildkite != "" {
+			os.Setenv("BUILDKITE_BRANCH", originalBuildkite)
+		} else {
+			os.Unsetenv("BUILDKITE_BRANCH")
+		}
+		if originalGithubRepo != "" {
+			os.Setenv("GITHUB_REPOSITORY", originalGithubRepo)
+		} else {
+			os.Unsetenv("GITHUB_REPOSITORY")
+		}
+	}()
+
+	client := saclient.NewClient("https://example.com/graphql", "test-api-key")
+	scan := &Scan{
+		ID:     "scan-id-123",
+		Tags:   map[string]string{},
+		client: client,
+	}
+
+	branchName, err := scan.AssociateGithubBranchName(context.Background())
+
+	if err != nil {
+		t.Errorf("AssociateGithubBranchName failed: %v", err)
+	}
+
+	if branchName != "" {
+		t.Errorf("Expected empty branch name when GitHub repo ID is empty, got %s", branchName)
+	}
+}
+
+func TestScan_AssociateGithubBranchName_EmptyGithubRepoID_InvalidFormat(t *testing.T) {
+	// Save original values
+	originalBuildkite := os.Getenv("BUILDKITE_BRANCH")
+	originalGithubRepo := os.Getenv("GITHUB_REPOSITORY")
+
+	// Set test environment - valid branch name but invalid GITHUB_REPOSITORY format
+	os.Setenv("BUILDKITE_BRANCH", "develop")
+	os.Setenv("GITHUB_REPOSITORY", "invalid-repo-format") // This will cause catalog.GithubRepoID to return empty string
+
+	// Restore original values
+	defer func() {
+		if originalBuildkite != "" {
+			os.Setenv("BUILDKITE_BRANCH", originalBuildkite)
+		} else {
+			os.Unsetenv("BUILDKITE_BRANCH")
+		}
+		if originalGithubRepo != "" {
+			os.Setenv("GITHUB_REPOSITORY", originalGithubRepo)
+		} else {
+			os.Unsetenv("GITHUB_REPOSITORY")
+		}
+	}()
+
+	client := saclient.NewClient("https://example.com/graphql", "test-api-key")
+	scan := &Scan{
+		ID:     "scan-id-123",
+		Tags:   map[string]string{},
+		client: client,
+	}
+
+	branchName, err := scan.AssociateGithubBranchName(context.Background())
+
+	if err != nil {
+		t.Errorf("AssociateGithubBranchName failed: %v", err)
+	}
+
+	if branchName != "" {
+		t.Errorf("Expected empty branch name when GitHub repo ID is empty due to invalid format, got %s", branchName)
+	}
+}
+
 func TestScan_AssociateGithubBranchName_ContextCancellation(t *testing.T) {
 	// Save original values
 	originalBuildkite := os.Getenv("BUILDKITE_BRANCH")
