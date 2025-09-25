@@ -491,6 +491,88 @@ func TestScan_AssociateGithubPullRequest_GraphQLError(t *testing.T) {
 	}
 }
 
+func TestScan_AssociateGithubPullRequest_EmptyGithubRepoID(t *testing.T) {
+	// Save original values
+	originalBuildkite := os.Getenv("BUILDKITE_PULL_REQUEST")
+	originalGithubRepo := os.Getenv("GITHUB_REPOSITORY")
+
+	// Set test environment - valid PR number but no GITHUB_REPOSITORY
+	os.Setenv("BUILDKITE_PULL_REQUEST", "456")
+	os.Unsetenv("GITHUB_REPOSITORY") // This will cause catalog.GithubRepoID to return empty string
+
+	// Restore original values
+	defer func() {
+		if originalBuildkite != "" {
+			os.Setenv("BUILDKITE_PULL_REQUEST", originalBuildkite)
+		} else {
+			os.Unsetenv("BUILDKITE_PULL_REQUEST")
+		}
+		if originalGithubRepo != "" {
+			os.Setenv("GITHUB_REPOSITORY", originalGithubRepo)
+		} else {
+			os.Unsetenv("GITHUB_REPOSITORY")
+		}
+	}()
+
+	client := saclient.NewClient("https://example.com/graphql", "test-api-key")
+	scan := &Scan{
+		ID:     "scan-id-123",
+		Tags:   map[string]string{},
+		client: client,
+	}
+
+	prNumber, err := scan.AssociateGithubPullRequest(context.Background())
+
+	if err != nil {
+		t.Errorf("AssociateGithubPullRequest failed: %v", err)
+	}
+
+	if prNumber != 0 {
+		t.Errorf("Expected PR number 0 when GitHub repo ID is empty, got %d", prNumber)
+	}
+}
+
+func TestScan_AssociateGithubPullRequest_EmptyGithubRepoID_InvalidFormat(t *testing.T) {
+	// Save original values
+	originalBuildkite := os.Getenv("BUILDKITE_PULL_REQUEST")
+	originalGithubRepo := os.Getenv("GITHUB_REPOSITORY")
+
+	// Set test environment - valid PR number but invalid GITHUB_REPOSITORY format
+	os.Setenv("BUILDKITE_PULL_REQUEST", "789")
+	os.Setenv("GITHUB_REPOSITORY", "invalid-repo-format") // This will cause catalog.GithubRepoID to return empty string
+
+	// Restore original values
+	defer func() {
+		if originalBuildkite != "" {
+			os.Setenv("BUILDKITE_PULL_REQUEST", originalBuildkite)
+		} else {
+			os.Unsetenv("BUILDKITE_PULL_REQUEST")
+		}
+		if originalGithubRepo != "" {
+			os.Setenv("GITHUB_REPOSITORY", originalGithubRepo)
+		} else {
+			os.Unsetenv("GITHUB_REPOSITORY")
+		}
+	}()
+
+	client := saclient.NewClient("https://example.com/graphql", "test-api-key")
+	scan := &Scan{
+		ID:     "scan-id-123",
+		Tags:   map[string]string{},
+		client: client,
+	}
+
+	prNumber, err := scan.AssociateGithubPullRequest(context.Background())
+
+	if err != nil {
+		t.Errorf("AssociateGithubPullRequest failed: %v", err)
+	}
+
+	if prNumber != 0 {
+		t.Errorf("Expected PR number 0 when GitHub repo ID is empty due to invalid format, got %d", prNumber)
+	}
+}
+
 func TestScan_AssociateGithubPullRequest_ContextCancellation(t *testing.T) {
 	// Save original values
 	originalBuildkite := os.Getenv("BUILDKITE_PULL_REQUEST")

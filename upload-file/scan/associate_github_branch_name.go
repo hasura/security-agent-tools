@@ -2,6 +2,7 @@ package scan
 
 import (
 	"context"
+	"log"
 	"os"
 	"strings"
 
@@ -17,6 +18,10 @@ func (s *Scan) AssociateGithubBranchName(ctx context.Context) (string, error) {
 	ghRepoID, err := catalog.GithubRepoID(ctx, s.client)
 	if err != nil {
 		return "", err
+	}
+	if ghRepoID == "" {
+		log.Println("Unable to associate GitHub branch. Try setting GITHUB_REPOSITORY environment variable if not already set.")
+		return "", nil
 	}
 
 	req := graphql.NewRequest(`mutation AssociateGitHubBranchName($scan_id: uuid!, $github_repo_id: uuid!, $github_branch_name: string!) {

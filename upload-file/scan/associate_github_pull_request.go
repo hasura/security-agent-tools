@@ -2,6 +2,7 @@ package scan
 
 import (
 	"context"
+	"log"
 	"os"
 	"strconv"
 	"strings"
@@ -18,6 +19,10 @@ func (s *Scan) AssociateGithubPullRequest(ctx context.Context) (int, error) {
 	ghRepoID, err := catalog.GithubRepoID(ctx, s.client)
 	if err != nil {
 		return 0, err
+	}
+	if ghRepoID == "" {
+		log.Println("Unable to associate GitHub pull request. Try setting GITHUB_REPOSITORY environment variable if not already set.")
+		return 0, nil
 	}
 
 	req := graphql.NewRequest(`mutation AssociateGitHubPullRequest($scan_id: uuid!, $github_repo_id: uuid!, $github_pr_number: int_32!) {
