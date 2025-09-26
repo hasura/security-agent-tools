@@ -45,7 +45,7 @@ func main() {
 		log.Printf("Associated image name: %s\n", imageName)
 	}
 
-	domain, err := sc.AssociateProductDomain(context.Background())
+	domain, err := sc.AssociateProductDomains(context.Background())
 	switch {
 	case err != nil:
 		pd, _ := catalog.ProductDomains(context.Background(), secAgentClient)

@@ -2,12 +2,13 @@ package scan
 
 import (
 	"context"
+	"errors"
+	"strings"
 
 	"github.com/machinebox/graphql"
 )
 
-func (s *Scan) AssociateProductDomain(ctx context.Context) (string, error) {
-	productDomain := s.Tags["product_domain"]
+func (s *Scan) associateProductDomain(ctx context.Context, productDomain string) (string, error) {
 	if productDomain == "" {
 		return "", nil
 	}
@@ -33,4 +34,21 @@ func (s *Scan) AssociateProductDomain(ctx context.Context) (string, error) {
 	}
 
 	return productDomain, s.client.ExecuteGQL(ctx, req, &response)
+}
+
+func (s *Scan) AssociateProductDomains(ctx context.Context) (string, error) {
+	productDomain := s.Tags["product_domain"]
+	if productDomain == "" {
+		return "", nil
+	}
+
+	var errs []error
+	for _, pd := range strings.Split(productDomain, ",") {
+		_, err := s.associateProductDomain(ctx, strings.TrimSpace(pd))
+		if err != nil {
+			errs = append(errs, err)
+		}
+	}
+
+	return productDomain, errors.Join(errs...)
 }
