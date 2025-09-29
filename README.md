@@ -33,9 +33,7 @@ The `upload-file` action uploads a file to the Security Agent. It can be used to
     metadata_upload_path: ''
 ```
 
-#### Service-based Upload
-
-You can use `service=<service-name>` in `tags` to upload the metadata file to a service directory. The metadata will be uploaded to `metadata/services/<service-name>`.
+#### Usage
 
 This is compatible to run with all event types in GitHub Actions: `push`, `pull_request`, `schedule`, `workflow_dispatch`. That means that, you can use the GitHub action to store security scan reports from pull request builds, branch builds, cron builds, and manual builds.
 
@@ -82,24 +80,6 @@ jobs:
             scanner=trivy
 ```
 
-#### Custom Upload
-
-If your use-case doesn't fit in the usual "service-based upload" described above, you can have more customization in which you are uploading the file to. You can use `metadata_upload_path` to specify the path to upload the metadata file.
-
-```yaml
-- name: Upload Trivy scan results to Security Agent
-  uses: hasura/security-agent-tools/upload-file@v1
-  with:
-    file_path: trivy-results.json
-    security_agent_api_key: ${{ secrets.SECURITY_AGENT_API_KEY }}
-    metadata_upload_path: |
-      lts-image-scans/${{ steps.timestamp.outputs.value }}/${{ steps.artifact-name.outputs.name }}
-    tags: |
-      scanner=trivy
-      image_name=${{ matrix.service.image }}
-```
-
-This will upload the metadata file to `metadata/lts-image-scans/<timestamp>/<artifact-name>/*` path whenever invoked from a GitHub workflow.
 
 ## Buildkite
 
@@ -132,6 +112,7 @@ EOF
     -e BUILDKITE_BRANCH \
     -e BUILDKITE_TAG \
     -e BUILDKITE_PULL_REQUEST \
+    -e GITHUB_REPOSITORY \
     ghcr.io/hasura/security-agent-tools/upload-file:v1
 }
 

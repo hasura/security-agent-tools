@@ -55,7 +55,7 @@ func main() {
 		}
 		log.Fatalf("Failed to associate product domain with scan: %v. Please check `product_domain` value is one of the following:\n%s", err, pds.String())
 	case domain != "":
-		log.Printf("Associated product domain: %s\n", domain)
+		log.Printf("Associated product domain(s): %s\n", domain)
 	}
 
 	serviceName, err := sc.AssociateServiceName(context.Background())
