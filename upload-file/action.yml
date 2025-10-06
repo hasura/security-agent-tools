@@ -19,7 +19,7 @@ inputs:
   security_agent_api_endpoint:
     description: "Security Agent API endpoint"
     required: false
-    default: https://security-agent.ddn.pro.hasura.io/graphql
+    default: https://sec-ql.agents-hasura.private-ddn.hasura.app/graphql
   security_agent_api_key:
     description: "Security Agent API key"
     required: true

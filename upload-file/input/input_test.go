@@ -126,7 +126,7 @@ func TestParseSecurityAgentAPIEndpoint(t *testing.T) {
 			envEndpoint:      "",
 			envAPIKey:        "test-api-key",
 			envFilePath:      testFile,
-			expectedEndpoint: "https://security-agent.ddn.pro.hasura.io/graphql",
+			expectedEndpoint: "https://sec-ql.agents-hasura.private-ddn.hasura.app/graphql",
 			expectError:      false,
 		},
 		{
@@ -134,7 +134,7 @@ func TestParseSecurityAgentAPIEndpoint(t *testing.T) {
 			envEndpoint:      "", // Will be unset in test
 			envAPIKey:        "test-api-key",
 			envFilePath:      testFile,
-			expectedEndpoint: "https://security-agent.ddn.pro.hasura.io/graphql",
+			expectedEndpoint: "https://sec-ql.agents-hasura.private-ddn.hasura.app/graphql",
 			expectError:      false,
 		},
 	}
