@@ -92,3 +92,11 @@ jobs:
           security_agent_api_key: ${{ secrets.SECURITY_AGENT_API_KEY }}
           tags: |
             product_release=v1.0.0
+
+      - name: Test team association
+        uses: ./upload-file
+        with:
+          file_path: test-upload.json
+          security_agent_api_key: ${{ secrets.SECURITY_AGENT_API_KEY }}
+          tags: |
+            team=security
