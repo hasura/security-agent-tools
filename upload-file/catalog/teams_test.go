@@ -18,18 +18,18 @@ func TestTeams_Success(t *testing.T) {
 		// Verify the request contains the expected query
 		body := make([]byte, r.ContentLength)
 		r.Body.Read(body)
-		if !strings.Contains(string(body), "vulnerability_reports_teams") {
-			t.Error("Expected query to contain vulnerability_reports_teams")
+		if !strings.Contains(string(body), "team_catalog_teams") {
+			t.Error("Expected query to contain team_catalog_teams")
 		}
 
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
 		w.Write([]byte(`{
 			"data": {
-				"vulnerability_reports_teams": [
-					{"code": "backend-team"},
-					{"code": "frontend-team"},
-					{"code": "devops-team"}
+				"team_catalog_teams": [
+					{"name": "backend-team"},
+					{"name": "frontend-team"},
+					{"name": "devops-team"}
 				]
 			}
 		}`))
@@ -61,7 +61,7 @@ func TestTeams_EmptyResponse(t *testing.T) {
 		w.WriteHeader(http.StatusOK)
 		w.Write([]byte(`{
 			"data": {
-				"vulnerability_reports_teams": []
+				"team_catalog_teams": []
 			}
 		}`))
 	}))
@@ -88,8 +88,8 @@ func TestTeams_SingleTeam(t *testing.T) {
 		w.WriteHeader(http.StatusOK)
 		w.Write([]byte(`{
 			"data": {
-				"vulnerability_reports_teams": [
-					{"code": "security-team"}
+				"team_catalog_teams": [
+					{"name": "security-team"}
 				]
 			}
 		}`))
@@ -138,7 +138,7 @@ func TestTeams_MalformedJSON(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte(`{"data": {"vulnerability_reports_teams": [{"code": "incomplete"`))
+		w.Write([]byte(`{"data": {"team_catalog_teams": [{"name": "incomplete"`))
 	}))
 	defer server.Close()
 
