@@ -89,4 +89,17 @@ func main() {
 	case productRelease != "":
 		log.Printf("Associated product release: %s\n", productRelease)
 	}
+
+	team, err := sc.AssociateTeam(context.Background())
+	switch {
+	case err != nil:
+		teams, _ := catalog.Teams(context.Background(), secAgentClient)
+		var ts strings.Builder
+		for _, t := range teams {
+			ts.WriteString("  - " + t + "\n")
+		}
+		log.Fatalf("Failed to associate team with scan: %v. Please check `team` value is one of the following:\n%s", err, ts.String())
+	case team != "":
+		log.Printf("Associated team: %s\n", team)
+	}
 }
