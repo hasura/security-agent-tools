@@ -12,9 +12,9 @@ func (s *Scan) AssociateTeam(ctx context.Context) (string, error) {
 		return "", nil
 	}
 
-	req := graphql.NewRequest(`mutation AssociateTeam($scan_id: uuid!, $team: string!) {
+	req := graphql.NewRequest(`mutation AssociateTeam($scan_id: uuid!, $team_name: string!) {
   insert_vulnerability_reports_by_team(
-    objects: {scan_id: $scan_id, team: $team}
+    objects: {scan_id: $scan_id, team_name: $team_name}
   ) {
     returning {
       id
@@ -22,7 +22,7 @@ func (s *Scan) AssociateTeam(ctx context.Context) (string, error) {
   }
 }`)
 	req.Var("scan_id", s.ID)
-	req.Var("team", team)
+	req.Var("team_name", team)
 
 	var response struct {
 		InsertVulnerabilityReportsByTeam struct {
