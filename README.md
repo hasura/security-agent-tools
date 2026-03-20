@@ -60,7 +60,7 @@ jobs:
       # docker build
 
       - name: Run Trivy vulnerability scanner (json output)
-        uses: aquasecurity/trivy-action@0.32.0
+        uses: aquasecurity/trivy-action@v0.35.0
         with:
           image-ref: ${{ steps.docker-build.outputs.IMG_NAME }}
           format: json
