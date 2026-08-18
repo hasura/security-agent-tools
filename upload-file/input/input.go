@@ -40,7 +40,7 @@ func Parse() (*Input, error) {
 
 	input.SecurityAgentAPIEndpoint = os.Getenv("INPUT_SECURITY_AGENT_API_ENDPOINT")
 	if input.SecurityAgentAPIEndpoint == "" {
-		input.SecurityAgentAPIEndpoint = "https://sec-ql.agents-hasura.private-ddn.hasura.app/graphql"
+		input.SecurityAgentAPIEndpoint = "https://p-7428f407-1771.promptql-internal.pro.hasura.io/graphql"
 	}
 
 	securityAgentAPIKey := os.Getenv("INPUT_SECURITY_AGENT_API_KEY")
